@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
 import { findUser, updateUser } from '../services/UserService';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +22,7 @@ export default function UserComponent() {
     try {
       const response = await findUser(accessToken);
       setUserData(response);
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setMessage('Failed to fetch user data.');
     }
@@ -35,6 +37,7 @@ export default function UserComponent() {
     try {
       await updateUser(accessToken, { username });
       setMessage('User updated successfully.');
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       setMessage('Failed to update user.');
     }

@@ -11,44 +11,6 @@ body {
     color: #333;
 }
 
-/* Button Styling */
-.button {
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: bold;
-    color: #fff;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* 로그인 버튼 */
-.loginButton {
-    background-image: linear-gradient(to right, #1a73e8, #2a9df4); /* 파란색 그라데이션 */
-}
-
-/* 회원가입 버튼 */
-.signupButton {
-    background-image: linear-gradient(to right, #34a853, #60c657); /* 초록색 그라데이션 */
-}
-
-/* Hover Effects */
-.button:hover {
-    transform: translateY(-3px); /* 버튼이 살짝 올라감 */
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* 그림자 확대 */
-    opacity: 0.9;
-}
-
-/* Active 상태: 눌렀을 때 버튼 효과 */
-.button:active {
-    transform: translateY(1px); /* 살짝 내려감 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 그림자 감소 */
-    opacity: 1;
-}
-
-
 /* Header Styling */
 header {
     display: flex;
@@ -223,4 +185,76 @@ footer a:hover {
 
 .close-btn {
     background-color: #ff4d4d;
+}
+
+/* 네비게이션 바 스타일 */
+.nav-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px;
+    background-color: #1a3e5c;
+}
+
+.nav-bar button {
+    background-color: #666;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.nav-bar button:hover {
+    background-color: #555;
+}
+
+/* 검색 바 스타일 */
+.search-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.search-select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #aaa;
+}
+
+.search-button {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.search-button:hover {
+    background-color: #45a049;
 }
