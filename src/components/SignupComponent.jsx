@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { signup } from '../services/AuthService';
 import { useNavigate } from 'react-router-dom';
+import '../css/SignupComponent.css';
 
 export default function SignupComponent() {
   const [username, setUsername] = useState('');
