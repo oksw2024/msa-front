@@ -1,0 +1,74 @@
+/* Main container styling */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #eef2f3;
+    background-image: linear-gradient(to right, #eef2f3, #8e9eab);
+    text-align: center;
+    padding: 20px;
+  }
+  
+  /* Welcome text styling */
+  .welcomeText {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .subText {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+  }
+  
+  /* Button container styling */
+  .buttonContainer {
+    display: flex;
+    gap: 15px;
+  }
+  
+  /* General button styling */
+  .button {
+    padding: 12px 25px;
+    font-size: 16px;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+  }
+  
+  /* Button colors */
+  .loginButton {
+    background-image: linear-gradient(to right, #1a73e8, #2a9df4);
+  }
+  
+  .signupButton {
+    background-image: linear-gradient(to right, #34a853, #60c657);
+  }
+  
+  .logoutButton {
+    background-image: linear-gradient(to right, #ff7043, #ff8a65);
+  }
+  
+  .deleteButton {
+    background-image: linear-gradient(to right, #d32f2f, #e57373);
+  }
+  
+  .profileButton {
+    background-image: linear-gradient(to right, #1e88e5, #42a5f5);
+  }
+  
+  /* Hover effects for buttons */
+  .button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    opacity: 0.9;
+  }
+  
