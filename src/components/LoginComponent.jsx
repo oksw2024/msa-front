@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { login } from '../services/AuthService';
 import { useNavigate } from 'react-router-dom';
+import '../css/LoginComponent.css';
 
 function LoginComponent({ onLogin }) {
   const [loginId, setLoginId] = useState('');
