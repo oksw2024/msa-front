@@ -88,3 +88,42 @@
 .book-link:hover {
     background-color: #0056b3;
 }
+
+.pagination-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination {
+    display: inline-flex;
+    list-style: none;
+    padding: 0;
+}
+
+.page-item {
+    margin: 0 5px;
+}
+
+.page-link {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    text-decoration: none;
+    color: #333;
+    cursor: pointer;
+}
+
+.page-link:hover {
+    background-color: #ddd;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.page-item.disabled .page-link {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
