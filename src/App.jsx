@@ -6,6 +6,7 @@ import UserComponent from './components/UserComponent';
 import LoginComponent from './components/LoginComponent';
 import SignupComponent from './components/SignupComponent';
 import BookSearchComponent from './components/BookSearchComponent';
+import BookDetailComponent from './components/BookDetailComponent';
 import './App.css';
 
 function App() {
@@ -34,11 +35,8 @@ function App() {
           />
           <Route path="/signup" element={<SignupComponent />} />
           <Route path="/user" element={<UserComponent />} />
-          {/* /book/list 경로 추가 */}
-          <Route
-              path="/book/list"
-              element={<BookSearchComponent />}
-          />
+          <Route path="/book/list" element={<BookSearchComponent />} />
+          <Route path="/book/details" element={<BookDetailComponent />} />
         </Routes>
       </Router>
   );
