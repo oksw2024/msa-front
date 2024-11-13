@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
-import { fetchBooks } from '../services/BookSearchService';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { getBooks } from '../services/BookSearchService';
 import '../css/BookSearchComponent.css';
 
 const BookSearchComponent = () => {
@@ -9,7 +9,7 @@ const BookSearchComponent = () => {
     const navigate = useNavigate();
 
     const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태
-    const [searchType, setSearchType] = useState(null); // 검색 옵션 상태 (null, title, author)
+    const [searchType, setSearchType] = useState(''); // 검색 옵션 상태
     const [results, setResults] = useState([]); // 검색 결과 상태
     const [currentPage, setCurrentPage] = useState(0); // 현재 페이지 번호
     const [totalPages, setTotalPages] = useState(0); // 총 페이지 수
@@ -18,26 +18,29 @@ const BookSearchComponent = () => {
     // 초기 로드 시 쿼리 파라미터에서 검색어 추출
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
-        const query = searchParams.get('query');
-        const type = searchParams.get('type');
+        const query = searchParams.get('query') || '';
+        const type = searchParams.get('type') || '';
         const page = parseInt(searchParams.get('pageNo'), 10) || 0;
 
+        setSearchQuery(query);
+        setSearchType(type);
+        setCurrentPage(page);
+
         if (query) {
-            setSearchQuery(query);
-            setSearchType(type || ''); // 검색 옵션을 가져오거나 기본값 설정
-            setCurrentPage(page);
             executeSearch(query, type, page); // 검색 실행
         }
     }, [location.search]);
 
     // 검색 실행 함수
     const executeSearch = async (query, type, page = 0) => {
-        console.log('Executing search with:', { query, type, page, pageSize }); // 디버깅용
-        const { books, totalPages } = await fetchBooks(type || 'keyword', query, page, pageSize);
-        console.log('Fetched Books:', books); // 검색 결과 출력
-        console.log('Total Pages:', totalPages); // 총 페이지 수 확인
-        setResults(books);
-        setTotalPages(totalPages);
+        console.log('Executing search with:', { query, type, page, pageSize });
+        try {
+            const { books, totalPages } = await getBooks(type || 'keyword', query, page, pageSize);
+            setResults(books);
+            setTotalPages(totalPages);
+        } catch (error) {
+            console.error('Error fetching books:', error);
+        }
     };
 
     // 검색어 제출 핸들러
@@ -50,12 +53,13 @@ const BookSearchComponent = () => {
     // 페이지 변경 핸들러
     const handlePageChange = (page) => {
         if (page < 0 || page >= totalPages) return; // 페이지 범위 초과 방지
+        setCurrentPage(page);
         navigate(`/book/list?query=${encodeURIComponent(searchQuery)}&type=${searchType}&pageNo=${page}`);
     };
 
-    // 페이지 버튼 생성
+    // 페이지 번호 생성 함수
     const generatePageNumbers = () => {
-        const maxVisiblePages = 5; // 고정된 페이징 버튼 수
+        const maxVisiblePages = 5;
         const startPage = Math.max(0, currentPage - Math.floor(maxVisiblePages / 2));
         const endPage = Math.min(totalPages, startPage + maxVisiblePages);
         const adjustedStartPage = Math.max(0, endPage - maxVisiblePages);
@@ -90,7 +94,7 @@ const BookSearchComponent = () => {
 
             {/* 검색 결과 */}
             <div className="search-results">
-                <h3 className="search-title">Search Results for "{searchQuery}"</h3>
+                <h3 className="search-title">Search Results for &#34;{searchQuery}&#34;</h3>
                 <div className="book-list">
                     {Array.isArray(results) && results.length > 0 ? (
                         results.map((result, index) => (
@@ -103,8 +107,8 @@ const BookSearchComponent = () => {
                                     <a
                                         href="#"
                                         onClick={(e) => {
-                                            e.preventDefault(); // 기본 동작 막기
-                                            navigate(`/book/details`, {state: {bookDetails: result.doc}}); // 책 정보를 state로 전달
+                                            e.preventDefault();
+                                            navigate(`/book/details`, { state: { bookDetails: result.doc } });
                                         }}
                                         className="book-link">상세정보</a>
                                 </div>
