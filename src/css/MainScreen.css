@@ -51,6 +51,67 @@ header nav {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Recommend Styling */
+.horizontal-list {
+    list-style-type: none;
+    display: flex;
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+    justify-content: center;
+}
+
+.horizontal-list li {
+    width: 400px; /* 너비 */
+    height: auto; /* 높이 */
+    padding: 20px; /* 내부 여백 */
+    margin: 10px; /* 외부 여백 */
+    border: 1px solid #ddd; /* 테두리 */
+    display: flex; /* 내부정렬 */
+    flex-direction: column; /* 세로 정렬 */
+    align-items: center; /* 가로 중앙 정렬 */
+    justify-content: center; /* 세로 중앙 정렬 */
+    background-color: #f9f9f9; /* 배경색 */
+    border-radius: 8px; /* 둥근 모서리 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+}
+
+.mainbook-image {
+    width: 70%;
+    height: auto;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+}
+
+.book-title {
+    font-size: 16px;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pagination-button {
+    padding: 10px 20px;
+    margin: 0 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .pagination-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
 /* Banner Styling */
 .banner {
     background-color: #2b4d68;
