@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { signup } from '../services/AuthService';
 import { useNavigate } from 'react-router-dom';
-import '../css/SignupComponent.css';
+import "../css/SignupComponent.css";
 
 export default function SignupComponent() {
   const [username, setUsername] = useState('');
@@ -72,7 +72,7 @@ export default function SignupComponent() {
   };
 
   return (
-    <div>
+    <div className='center'>
       <h2>회원가입</h2>
       <input
         type="text"
