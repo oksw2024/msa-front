@@ -99,16 +99,16 @@ const BookSearchComponent = () => {
                     {Array.isArray(results) && results.length > 0 ? (
                         results.map((result, index) => (
                             <div key={index} className="book-item">
-                                <img src={result.doc.bookImageURL} alt={result.doc.bookname} className="book-image" />
+                                <img src={result.bookImageURL} alt={result.bookname} className="book-image" />
                                 <div className="book-details">
-                                    <h4 className="book-title">{result.doc.bookname}</h4>
-                                    <p className="book-author">by {result.doc.authors}</p>
-                                    <p className="book-year">출판연도: {result.doc.publication_year}</p>
+                                    <h4 className="book-title">{result.bookname}</h4>
+                                    <p className="book-author">by {result.authors}</p>
+                                    <p className="book-year">출판연도: {result.publicationYear}</p>
                                     <a
                                         href="#"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            navigate(`/book/details`, { state: { bookDetails: result.doc } });
+                                            navigate(`/book/details`, { state: { bookDetails: result } });
                                         }}
                                         className="book-link">상세정보</a>
                                 </div>
@@ -130,6 +130,8 @@ const BookSearchComponent = () => {
                                 className="page-link"
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 0}
+                                aria-label="Previous page"
+                                tabIndex={currentPage === 0 ? -1 : 0}
                             >
                                 &laquo;
                             </button>
@@ -137,7 +139,11 @@ const BookSearchComponent = () => {
                         {/* 페이지 번호 버튼 */}
                         {generatePageNumbers().map((pageNum) => (
                             <li key={pageNum} className={`page-item ${pageNum === currentPage ? 'active' : ''}`}>
-                                <button className="page-link" onClick={() => handlePageChange(pageNum)}>
+                                <button
+                                    className="page-link" onClick={() => handlePageChange(pageNum)}
+                                    aria-label={`Page ${pageNum + 1}`}
+                                    tabIndex={0}
+                                    >
                                     {pageNum + 1}
                                 </button>
                             </li>
@@ -148,6 +154,8 @@ const BookSearchComponent = () => {
                                 className="page-link"
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage === totalPages - 1}
+                                aria-label="Next page"
+                                tabIndex={currentPage === totalPages - 1 ? -1 : 0}
                             >
                                 &raquo;
                             </button>
