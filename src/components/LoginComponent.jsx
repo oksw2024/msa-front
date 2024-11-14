@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { login } from '../services/AuthService';
 import { useNavigate } from 'react-router-dom';
-import '../css/LoginComponent.css';
+import "../css/LoginComponent.css";
 
 function LoginComponent({ onLogin }) {
   const [loginId, setLoginId] = useState('');
@@ -27,7 +27,7 @@ function LoginComponent({ onLogin }) {
   };
 
   return (
-    <div>
+    <div className='center'>
       <h2>Login</h2>
       <input
         type="text"
