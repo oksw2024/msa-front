@@ -1,7 +1,15 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { initializeKakaoMap, addUserMarker, addLibraryMarkers, getLibraries } from '../services/BookDetailService';
+import {
+    initializeKakaoMap,
+    addUserMarker,
+    addLibraryMarkers,
+    getLibraries,
+    checkBookExist,
+    moveToLibrary,
+    calculateDistance,
+} from '../services/BookDetailService';
 import '../css/BookDetailComponent.css';
 
 const BookDetailComponent = () => {
@@ -12,6 +20,9 @@ const BookDetailComponent = () => {
     const [libraries, setLibraries] = useState([]);
     const [map, setMap] = useState(null);
     const [error, setError] = useState(null);
+    const [userCoords, setUserCoords] = useState(null);
+    const [isUserCoordsReady, setIsUserCoordsReady] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(5); //도서관 리스트 표시 개수
 
     // 지도 초기화
     useEffect(() => {
@@ -24,11 +35,15 @@ const BookDetailComponent = () => {
             script.onload = () => {
                 const mapObj = initializeKakaoMap('map', setError);
                 setMap(mapObj);
+                const zoomControl = new kakao.maps.ZoomControl();
+                mapObj.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
             };
             document.head.appendChild(script);
         } else {
             const mapObj = initializeKakaoMap('map', setError);
             setMap(mapObj);
+            const zoomControl = new kakao.maps.ZoomControl();
+            mapObj.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
         }
     }, []);
 
@@ -39,14 +54,64 @@ const BookDetailComponent = () => {
         }
     }, [map]);
 
-    // 도서관 리스트 가져오기
+// 사용자 위치 가져오기
+    useEffect(() => {
+        const fetchUserLocation = async () => {
+            if (!navigator.geolocation) {
+                setError('사용자 위치 서비스가 지원되지 않습니다.');
+                setIsUserCoordsReady(true); // 위치가 없어도 로직 진행 가능
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setUserCoords({ latitude, longitude });
+                    setIsUserCoordsReady(true); // 위치 정보를 성공적으로 가져옴
+                },
+                () => {
+                    setError('사용자 위치를 가져올 수 없습니다.');
+                    setIsUserCoordsReady(true); // 오류 시에도 로직 진행 가능
+                }
+            );
+        };
+
+        fetchUserLocation();
+    }, []);
+
+// 도서관 리스트 가져오기 및 거리 계산
     useEffect(() => {
         const fetchLibraries = async () => {
-            if (!bookDetails?.isbn13) return;
+            if (!bookDetails?.isbn13 || !isUserCoordsReady) {
+                //console.warn('사용자 위치 또는 도서 정보가 준비되지 않았습니다.');
+                return;
+            }
 
             try {
                 const libs = await getLibraries(bookDetails.isbn13);
-                setLibraries(libs);
+
+                if (userCoords) {
+                    // 거리 계산 및 정렬
+                    const updatedLibraries = libs.map((lib) => {
+                        if (lib.latitude && lib.longitude) {
+                            lib.distance = calculateDistance(
+                                parseFloat(userCoords.latitude),
+                                parseFloat(userCoords.longitude),
+                                parseFloat(lib.latitude),
+                                parseFloat(lib.longitude)
+                            );
+                        } else {
+                            lib.distance = Number.MAX_SAFE_INTEGER;
+                        }
+                        return lib;
+                    });
+
+                    updatedLibraries.sort((a, b) => a.distance - b.distance);
+                    setLibraries(updatedLibraries);
+                } else {
+                    // 거리 없이 도서관 리스트 설정
+                    setLibraries(libs.map((lib) => ({ ...lib, distance: null })));
+                }
             } catch (err) {
                 console.error('Error fetching libraries:', err);
                 setError('도서관 정보를 가져오는 중 오류가 발생했습니다.');
@@ -54,27 +119,52 @@ const BookDetailComponent = () => {
         };
 
         fetchLibraries();
-    }, [bookDetails?.isbn13]);
+    }, [bookDetails?.isbn13, isUserCoordsReady]);
+
 
     // 도서관 마커 추가
     useEffect(() => {
         if (map && libraries.length > 0) {
-            addLibraryMarkers(map, libraries);
+            addLibraryMarkers(map, libraries); // handleCheckExist 전달
         }
     }, [map, libraries]);
+
+    const handleCheckExist = async (libCode, index) => {
+
+        if (!bookDetails?.isbn13 || !libCode) {
+            setError('도서 또는 도서관 정보가 올바르지 않습니다.');
+            return;
+        }
+
+        try {
+            const response = await checkBookExist(bookDetails.isbn13, libCode);
+
+            const updatedLibraries = [...libraries];
+            // API 응답에 따라 상태 업데이트
+            updatedLibraries[index].loanStatus = response.loanAvailable === "Y" ? '현재 대출 가능' : '현재 대출 불가';
+            updatedLibraries[index].buttonVisible = false;
+            setLibraries(updatedLibraries);
+        } catch {
+            alert('도서 보유 여부를 확인할 수 없습니다.');
+        }
+    };
+
+    const handleShowMore = () => {
+        setVisibleCount((prev) => prev + 5); // 5개씩 추가로 표시
+    };
 
     if (!bookDetails) {
         return (
             <div className="book-details-page">
                 <h2>No Book Details Available</h2>
-                <button onClick={() => navigate(-1)} className="back-button">Go Back</button>
+                <button onClick={() => navigate(-1)} className="back-button">뒤로가기</button>
             </div>
         );
     }
 
     return (
         <div className="book-details-page">
-            <button onClick={() => navigate(-1)} className="back-button">Go Back</button>
+            <button onClick={() => navigate(-1)} className="back-button">뒤로가기</button>
             <h1>{bookDetails.bookname}</h1>
             <div className="book-detail-content">
                 <img src={bookDetails.bookImageURL} alt={bookDetails.bookname} className="book-detail-image" />
@@ -90,27 +180,55 @@ const BookDetailComponent = () => {
             {error && <p className="error">{error}</p>}
             {libraries.length > 0 ? (
                 <ul className="library-list">
-                    {libraries.map((library, index) => (
+                    {libraries.slice(0, visibleCount).map((library, index) => ( // 처음 visibleCount만큼만 표시
                         <li key={index} className="library-item">
-                            <h3>{library.libName}</h3>
+                            <h3
+                                className="library-name"
+                                onClick={() => moveToLibrary(map, library.latitude, library.longitude)}
+                                style={{cursor: 'pointer', color: 'blue', textDecoration: 'underline'}}
+                            >
+                                {library.libName}
+                            </h3>
                             <p>주소: {library.address}</p>
                             <p>운영 시간: {library.operatingTime || '운영 시간 정보 없음'}</p>
+                            {library.distance !== null && (
+                                <p>거리: {Math.round(library.distance)}m</p>
+                            )}
                             <p>전화번호: {library.tel || '전화번호 정보 없음'}</p>
-                            {library.homepage && (
-                                <a
-                                    href={library.homepage}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="library-link"
+                            {/*{library.homepage && (*/}
+                            {/*    <a href={library.homepage} target="_blank" rel="noopener noreferrer" className="library-link">홈페이지</a>*/}
+                            {/*)}*/}
+                            {/*홈페이지 넣을까 말까 고민...*/}
+
+                            {/* 대출 상태 표시 */}
+                            {library.buttonVisible !== false ? (
+                                <button
+                                    className="check-exist-button"
+                                    onClick={() => handleCheckExist(library.libCode, index)}
                                 >
-                                    홈페이지
-                                </a>
+                                    도서 확인
+                                </button>
+                            ) : (
+                                <p className="loan-status">
+                                    {library.loanStatus === '현재 대출 가능' ? (
+                                        <span style={{ color: 'green' }}>{library.loanStatus}</span>
+                                    ) : (
+                                        <span style={{ color: 'red' }}>{library.loanStatus}</span>
+                                    )}
+                                </p>
                             )}
                         </li>
                     ))}
                 </ul>
             ) : (
                 <p>No library information available.</p>
+            )}
+            {visibleCount < libraries.length && (
+                <button className="show-more-button"
+                        onClick={handleShowMore}
+                        style={{width:'100%'}}>
+                    더보기
+                </button>
             )}
         </div>
     );
