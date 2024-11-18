@@ -6,6 +6,7 @@ import UserComponent from './components/UserComponent';
 import LoginComponent from './components/LoginComponent';
 import SignupComponent from './components/SignupComponent';
 import BookSearchComponent from './components/BookSearchComponent';
+import PlusBookComponent from './components/PlusBookComponent';
 import BookDetailComponent from './components/BookDetailComponent';
 import './App.css';
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="/signup" element={<SignupComponent />} />
           <Route path="/user" element={<UserComponent />} />
           <Route path="/book/list" element={<BookSearchComponent />} />
+          <Route path="/book/plus" element={<PlusBookComponent />} />
           <Route path="/book/details" element={<BookDetailComponent />} />
         </Routes>
       </Router>
