@@ -29,6 +29,14 @@ export default function PlusBookComponent() {
               <p><strong>Author:</strong> {book.doc.authors}</p>
               <p><strong>Publisher:</strong> {book.doc.publisher}</p>
               <p><strong>Publication Year:</strong> {book.doc.publication_year}</p>
+              <a
+                href="#"
+                onClick={(e) => {
+                    e.preventDefault();
+                    navigate(`/book/details`, { state: { bookDetails: book.doc } });
+                }}
+                className="book-link">상세정보
+              </a>
             </div>
           </li>
         ))}
