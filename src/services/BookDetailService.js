@@ -77,20 +77,44 @@ export const checkBookExist = async (isbn13, libCode) => {
 };
 
 // 카카오 지도 초기화
-export const initializeKakaoMap = (mapContainerId, onError) => {
+let cachedMap = null; // 캐싱된 지도 객체
+
+export const initializeKakaoMap = (mapContainerId, onError, options = null) => {
     if (!window.kakao || !window.kakao.maps) {
         onError('Kakao Map script not loaded.');
         return null;
     }
 
     const mapContainer = document.getElementById(mapContainerId);
-    const options = {
+
+    if (!mapContainer) {
+        onError('Map container not found.');
+        return null;
+    }
+
+    const mapOptions = options || {
         center: new kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심 좌표
-        level: 4,
+        level: 4, // 기본 줌 레벨
     };
 
-    const map = new kakao.maps.Map(mapContainer, options);
+    const map = new kakao.maps.Map(mapContainer, mapOptions);
+
+    // 캐싱
+    cachedMap = map;
+
     return map;
+};
+
+//
+export const clearKakaoMap = (mapContainerId) => {
+    const mapContainer = document.getElementById(mapContainerId);
+    if (mapContainer) {
+        Array.from(mapContainer.children).forEach((child) => {
+            if (child.id !== 'sidebar') {
+                child.remove(); // 지도만 삭제하고 사이드바는 유지
+            }
+        });
+    }
 };
 
 // 도서관 좌표로 지도 이동
