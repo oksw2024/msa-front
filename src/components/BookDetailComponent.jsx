@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
     initializeKakaoMap,
+    clearKakaoMap,
     addUserMarker,
     addLibraryMarkers,
     getLibraries,
@@ -24,26 +25,60 @@ const BookDetailComponent = () => {
     const [isUserCoordsReady, setIsUserCoordsReady] = useState(false);
     const [visibleCount, setVisibleCount] = useState(5); //도서관 리스트 표시 개수
 
+
     // 지도 초기화
     useEffect(() => {
+        const initializeMap = () => {
+
+            const mapObj = initializeKakaoMap('map', setError);
+
+            if (mapObj) {
+                setMap(mapObj);
+
+                // 확대/축소 컨트롤이 중복 추가되지 않도록 관리
+                if (!mapObj.zoomControlAdded) {
+                    const zoomControl = new kakao.maps.ZoomControl();
+                    mapObj.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+                    mapObj.zoomControlAdded = true; // 커스텀 속성 추가
+                }
+
+                // 확대/축소 이벤트 등록
+                kakao.maps.event.addListener(mapObj, 'zoom_changed', () => {
+                    const zoomLevel = mapObj.getLevel();
+                    const center = mapObj.getCenter();
+                    console.log(`Zoom level changed to: ${zoomLevel}`);
+
+                    // 지도 삭제 후 재생성
+                    clearKakaoMap('map');
+                    const newMapObj = initializeKakaoMap('map', (error) => console.error(error), {
+                        center: center, // 기존 중심 좌표 유지
+                        level: zoomLevel, // 기존 줌 레벨 유지
+                    });
+
+                    if (newMapObj) {
+                        setMap(newMapObj);
+
+                        // 확대/축소 컨트롤이 중복 추가되지 않도록 관리
+                        if (!newMapObj.zoomControlAdded) {
+                            const zoomControl = new kakao.maps.ZoomControl();
+                            newMapObj.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+                            newMapObj.zoomControlAdded = true; // 커스텀 속성 추가
+                        }
+                    }
+                });
+            }
+        };
+
         const scriptExists = !!window.kakao;
 
         if (!scriptExists) {
             const script = document.createElement('script');
             script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=ce20020febdbc7fbd8fbedaf35eeb4e8&libraries=services`;
             script.async = true;
-            script.onload = () => {
-                const mapObj = initializeKakaoMap('map', setError);
-                setMap(mapObj);
-                const zoomControl = new kakao.maps.ZoomControl();
-                mapObj.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-            };
+            script.onload = initializeMap;
             document.head.appendChild(script);
         } else {
-            const mapObj = initializeKakaoMap('map', setError);
-            setMap(mapObj);
-            const zoomControl = new kakao.maps.ZoomControl();
-            mapObj.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+            initializeMap();
         }
     }, []);
 
