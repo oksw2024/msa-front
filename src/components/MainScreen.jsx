@@ -9,11 +9,12 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
   const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태
   const [searchType, setSearchType] = useState(''); // 검색 옵션 상태
   const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [newBooks, setNewBooks] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 2;
+  const [currentPage2, setCurrentPage2] = useState(0);
+  const itemsPerPage = 3;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [apiCalled, setApiCalled] = useState(false); // api 요청 여부 버튼(나중에 삭제)
 
   const handleRecommendedBooks = async () => {
     setLoading(true);
@@ -29,7 +30,6 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
 
       setRecommendedBooks(response.data.response.docs || []);
       console.log("docs : ", recommendedBooks);
-      setApiCalled(true);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -37,10 +37,26 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
     }
   };
 
-  // 나중에 API 요청 버튼 제거 시 추가
-  // useEffect(() => {
-  //   handleRecommendedBooks();
-  // }, []);
+  const handleNewBooks = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get('http://localhost:8080/api/recommend/new');
+
+      setNewBooks(response.data.response.docs || []);
+      console.log("docs : ", newBooks);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleRecommendedBooks();
+    handleNewBooks();
+  }, []);
 
   const handleDeleteUser = async () => {
     const accessToken = localStorage.getItem('accessToken');
@@ -67,11 +83,17 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
     }
   };
 
-  const limitedBooks = recommendedBooks.slice(0, 10);
+  const limitedBooks = recommendedBooks.slice(0, 6);
+  const limitedBooks2 = newBooks.slice(0, 6);
 
   const paginatedBooks = limitedBooks.slice(
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
+  );
+
+  const paginatedBooks2 = limitedBooks2.slice(
+    currentPage2 * itemsPerPage,
+    (currentPage2 + 1) * itemsPerPage
   );
 
   // 다음 페이지 버튼 클릭
@@ -79,9 +101,17 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
     setCurrentPage((prevPage) => Math.min(prevPage + 1, Math.ceil(limitedBooks.length/ itemsPerPage) -1));
   };
 
+  const handleNext2 = () => {
+    setCurrentPage2((prevPage) => Math.min(prevPage + 1, Math.ceil(limitedBooks2.length/ itemsPerPage) -1));
+  };
+
   // 이전 페이지 버튼 클릭
   const handlePrev = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 0));
+  };
+
+  const handlePrev2 = () => {
+    setCurrentPage2((prevPage) => Math.max(prevPage - 1, 0));
   };
 
   return (
@@ -137,24 +167,11 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
         </form>
       </div>
 
-      {/* API 요청 버튼(나중에 삭제) */}
-      {!apiCalled && (
-        <div className='fetch-button-container'>
-          <button onClick={() => handleRecommendedBooks()} className='fetch-button'>
-            인기 대출 도서 버튼
-          </button>
-          </div>
-      )}
-
       {/* 인기 대출 도서 표시 */}
-      {/* 나중에 API 요청 버튼 제거 시 삭제 */} {apiCalled && (
       <section>
         <ul className='book-tab'>
           <li className='book-popular'>
             <a href="#">인기 대출 도서</a>
-          </li>
-          <li className='book-new'>
-            <a href="#">신규 도서</a>
           </li>
           <li className='plus'>
             <a href="#" onClick={(e) => {
@@ -196,7 +213,53 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
           </button>
         </div>
       </section>
-      )}
+
+      {/* 신규 도서 */}
+      <section>
+        <ul className='book-tab'>
+          <li className='book-new'>
+            <a href="#">신규 도서</a>
+          </li>
+          <li className='plus'>
+            <a href="#" onClick={(e) => {
+              e.preventDefault();
+              navigate('/book/plus', {state: newBooks})}}>더보기</a>
+          </li>
+        </ul>
+        {loading && <p>Loading recommended books...</p>}
+        {error && <p>Error: {error}</p>}
+
+        {paginatedBooks2.length > 0 && (
+          <ul className='horizontal-list'>
+            {paginatedBooks2.map((book, index) => (
+              <li key={index}>
+                <img src={book.doc.bookImageURL} alt={book.doc.bookname} className="mainbook-image"/>
+                <div className='book-details'>
+                  <h4 className='book-title'>{book.doc.bookname}</h4>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* 페이지네이션 버튼 */}
+        <div className="pagination-controls">
+          <button
+            onClick={handlePrev2}
+            disabled={currentPage2 === 0}
+            className="pagination-button"
+          >
+            이전
+          </button>
+          <button
+            onClick={handleNext2}
+            disabled={currentPage2 === Math.ceil(limitedBooks2.length / itemsPerPage) -1}
+            className="pagination-button"
+          >
+            다음
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
