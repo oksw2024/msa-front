@@ -15,6 +15,7 @@ export default function MainScreen({ isLoggedIn, handleLogout }) {
   const itemsPerPage = 3;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [books, setBooks] = useState([]);
 
   const handleRecommendedBooks = async () => {
     setLoading(true);

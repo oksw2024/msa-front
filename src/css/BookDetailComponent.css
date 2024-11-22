@@ -171,3 +171,7 @@ h1, h2 {
 .info .link {
     color: #5085BB;
 }
+
+#map .kakao-map-container{
+    background-color: white !important;
+}
