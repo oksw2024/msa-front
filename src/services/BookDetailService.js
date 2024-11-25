@@ -9,7 +9,7 @@ export const getLibraries = async (isbn13, region = 11) => {
     isFetching = true;
 
     try {
-        const response = await axios.get('http://localhost:8081/api/libraries', {
+        const response = await axios.get('http://localhost:8080/api/libraries', {
             params: { isbn: isbn13, region },
         });
 
@@ -59,7 +59,7 @@ export const checkBookExist = async (isbn13, libCode) => {
     }
 
     try {
-        const response = await axios.get('http://localhost:8082/api/book/exist', {
+        const response = await axios.get('http://localhost:8080/api/book/exist', {
             params: { isbn13, libCode },
         });
 
