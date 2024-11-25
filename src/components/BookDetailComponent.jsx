@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -191,7 +190,7 @@ const BookDetailComponent = () => {
     if (!bookDetails) {
         return (
             <div className="book-details-page">
-                <h2>No Book Details Available</h2>
+                <h2>서적 정보가 존재하지 않습니다.</h2>
                 <button onClick={() => navigate(-1)} className="back-button">뒤로가기</button>
             </div>
         );
@@ -199,19 +198,28 @@ const BookDetailComponent = () => {
 
     return (
         <div className="book-details-page">
-            <button onClick={() => navigate(-1)} className="back-button">뒤로가기</button>
-            <h1>{bookDetails.bookname}</h1>
+            <a
+                href="#"
+                onClick={(e) => {
+                    e.preventDefault(); // 기본 동작 방지
+                    navigate(-1); // 뒤로가기 기능
+                }}
+                className="back-button"
+            >뒤로가기
+            </a>
             <div className="book-detail-content">
-                <img src={bookDetails.bookImageURL} alt={bookDetails.bookname} className="book-detail-image" />
+                <img src={bookDetails.bookImageURL} alt={bookDetails.bookname} className="book-detail-image"/>
                 <div className="book-details-info">
-                    <p><strong>저자명:</strong> {bookDetails.authors}</p>
+                    <h1>{bookDetails.bookname}</h1>
+                    <p><strong>저자명:</strong> {bookDetails.authors.replace(/;/g, ' | ')}</p>
                     <p><strong>출판사:</strong> {bookDetails.publisher}</p>
                     <p><strong>출판연도:</strong> {bookDetails.publication_year}</p>
                     <p><strong>ISBN:</strong> {bookDetails.isbn13}</p>
                 </div>
             </div>
-            <div id="map" style={{ width: '100%', height: '400px', margin: '20px 0' }}></div>
-            <h2>Libraries with this Book</h2>
+            <h3><span style={{color: '#3f7aaa'}}>{bookDetails.bookname}</span> 소장 도서관</h3>
+            <div id="map" style={{width: '100%', height: '400px', margin: '5px 0'}}></div>
+
             {error && <p className="error">{error}</p>}
             {libraries.length > 0 ? (
                 <ul className="library-list">
@@ -219,15 +227,27 @@ const BookDetailComponent = () => {
                         <li key={index} className="library-item">
                             <h3
                                 className="library-name"
-                                onClick={() => moveToLibrary(map, library.latitude, library.longitude)}
+                                onClick={() => {
+                                    moveToLibrary(map, library.latitude, library.longitude);
+                                    document.getElementById('map')?.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    });
+                                }}
                                 style={{cursor: 'pointer', color: 'blue', textDecoration: 'underline'}}
                             >
                                 {library.libName}
                             </h3>
+
                             <p>주소: {library.address}</p>
                             <p>운영 시간: {library.operatingTime || '운영 시간 정보 없음'}</p>
                             {library.distance !== null && (
-                                <p>거리: {Math.round(library.distance)}m</p>
+                                <p>
+                                    거리:{" "}
+                                    {library.distance >= 1000
+                                        ? `${(library.distance / 1000).toFixed(1)}km`
+                                        : `${Math.round(library.distance)}m`}
+                                </p>
                             )}
                             <p>전화번호: {library.tel || '전화번호 정보 없음'}</p>
                             {/*{library.homepage && (*/}
@@ -246,9 +266,9 @@ const BookDetailComponent = () => {
                             ) : (
                                 <p className="loan-status">
                                     {library.loanStatus === '현재 대출 가능' ? (
-                                        <span style={{ color: 'green' }}>{library.loanStatus}</span>
+                                        <span style={{color: 'green'}}>{library.loanStatus}</span>
                                     ) : (
-                                        <span style={{ color: 'red' }}>{library.loanStatus}</span>
+                                        <span style={{color: 'red'}}>{library.loanStatus}</span>
                                     )}
                                 </p>
                             )}
@@ -261,7 +281,7 @@ const BookDetailComponent = () => {
             {visibleCount < libraries.length && (
                 <button className="show-more-button"
                         onClick={handleShowMore}
-                        style={{width:'100%'}}>
+                        style={{width: '100%'}}>
                     더보기
                 </button>
             )}
