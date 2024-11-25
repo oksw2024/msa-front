@@ -26,6 +26,13 @@
     border-radius: 4px;
     font-size: 16px;
   }
+
+  .center .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
   
   /* 버튼 스타일 */
   .center button {
@@ -48,6 +55,36 @@
   .center p {
     color: red;
     font-size: 14px;
-    margin-top: 10px;
+    margin-top: 0px;
   }
   
+  /* 비밀번호 보기/숨기기 버튼 */
+  .center .password-container {
+    position: relative;
+    width: 300px; /* input 필드와 동일한 너비 */
+  }
+
+  .center .password-container input {
+    width: 100%; /* 부모 컨테이너에 맞게 */
+  }
+
+  .center .password-container button {
+    position: absolute;
+    right: 10px;
+    top: 35%;
+    transform: translateY(-50%);
+    background-color: #ddd; /* 기본 배경색 */
+    color: #333; /* 버튼 텍스트 색상 */
+    width: auto;
+    height: 30px;
+    padding: 0 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .center .password-container button:hover {
+    background-color: #bbb; /* hover 시 어두운 배경색 */
+  }
