@@ -28,9 +28,16 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    setIsLoggedIn(false);
+    const confirmLogout = window.confirm("로그아웃 하시겠습니까?");
+
+    if (confirmLogout) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      setIsLoggedIn(false);
+      alert("로그아웃되었습니다.");
+    } else {
+      alert("로그아웃이 취소되었습니다.");
+    }
   };
 
   return (
