@@ -10,6 +10,7 @@ import {
     moveToLibrary,
     calculateDistance,
 } from '../services/BookDetailService';
+import { getFavorites, addFavorite, removeFavorite } from '../services/FavoriteService.js'
 import '../css/BookDetailComponent.css';
 
 const BookDetailComponent = () => {
@@ -23,7 +24,46 @@ const BookDetailComponent = () => {
     const [userCoords, setUserCoords] = useState(null);
     const [isUserCoordsReady, setIsUserCoordsReady] = useState(false);
     const [visibleCount, setVisibleCount] = useState(5); //도서관 리스트 표시 개수
+    const [isFavorite, setIsFavorite] = useState(false); //즐겨찾기
 
+    // 서버에서 초기 즐겨찾기 상태 가져오기
+    useEffect(() => {
+        const fetchFavoriteStatus = async () => {
+            try {
+                const favorites = await getFavorites('accessToken'); // 적절한 토큰 전달
+                const isFavorited = favorites.some((fav) => fav.bookIsbn === bookDetails?.isbn13);
+                setIsFavorite(isFavorited);
+            } catch (error) {
+                console.error('Failed to fetch favorite status:', error);
+            }
+        };
+        if (bookDetails?.isbn13) {
+            fetchFavoriteStatus();
+        }
+    }, [bookDetails]);
+
+    // 즐겨찾기 상태 변경 
+    const toggleFavorite = async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            alert('로그인이 필요합니다.');
+            return;
+        }
+
+        try {
+            if (isFavorite) {
+                await removeFavorite(accessToken, bookDetails.isbn13);
+            } else {
+                await addFavorite(accessToken, bookDetails); // 책 상세 정보를 전달
+            }
+            setIsFavorite(!isFavorite);
+        } catch (error) {
+            console.error('Failed to update favorite status:', error);
+            alert('즐겨찾기 상태를 변경할 수 없습니다.');
+        }
+    };
+
+    ///이하 기존 기능, 변경 없음
 
     // 지도 초기화
     useEffect(() => {
@@ -102,6 +142,25 @@ const BookDetailComponent = () => {
                     const { latitude, longitude } = position.coords;
                     setUserCoords({ latitude, longitude });
                     setIsUserCoordsReady(true); // 위치 정보를 성공적으로 가져옴
+                    // 기존 맵 초기화
+                    clearKakaoMap('map');
+
+                    // 새로운 맵 초기화
+                    const mapObj = initializeKakaoMap('map', setError, {
+                        center: new kakao.maps.LatLng(latitude, longitude),
+                        level: 4, // 적절한 줌 레벨 설정
+                    });
+
+                    if (mapObj) {
+                        setMap(mapObj);
+
+                        // 확대/축소 컨트롤 추가
+                        const zoomControl = new kakao.maps.ZoomControl();
+                        mapObj.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+
+                        // 사용자 위치 마커 추가
+                        addUserMarker(mapObj, setError);
+                    }
                 },
                 () => {
                     setError('사용자 위치를 가져올 수 없습니다.');
@@ -191,7 +250,7 @@ const BookDetailComponent = () => {
         return (
             <div className="book-details-page">
                 <h2>서적 정보가 존재하지 않습니다.</h2>
-                <button onClick={() => navigate(-1)} className="back-button">뒤로가기</button>
+                <button onClick={() => navigate(-1)} className="login-back-button">뒤로가기</button>
             </div>
         );
     }
@@ -210,33 +269,46 @@ const BookDetailComponent = () => {
             <div className="book-detail-content">
                 <img src={bookDetails.bookImageURL} alt={bookDetails.bookname} className="book-detail-image"/>
                 <div className="book-details-info">
-                    <h1>{bookDetails.bookname}</h1>
+                    <h1>{bookDetails.bookname}
+                        <span
+                            onClick={toggleFavorite}
+                            style={{
+                                cursor: 'pointer',
+                                color: isFavorite ? 'gold' : 'gray',
+                                marginLeft: '15px',
+                                fontSize: '24px',
+                            }}
+                        >
+                            {isFavorite ? '★' : '☆'}
+                        </span>
+                    </h1>
                     <p><strong>저자명:</strong> {bookDetails.authors.replace(/;/g, ' | ')}</p>
                     <p><strong>출판사:</strong> {bookDetails.publisher}</p>
                     <p><strong>출판연도:</strong> {bookDetails.publication_year}</p>
                     <p><strong>ISBN:</strong> {bookDetails.isbn13}</p>
                 </div>
             </div>
-            <h3><span style={{color: '#3f7aaa'}}>{bookDetails.bookname}</span> 소장 도서관</h3>
+            <h4><span style={{color: '#3f7aaa'}}>{bookDetails.bookname}</span> 소장 도서관</h4>
             <div id="map" style={{width: '100%', height: '400px', margin: '5px 0'}}></div>
 
             {error && <p className="error">{error}</p>}
             {libraries.length > 0 ? (
                 <ul className="library-list">
                     {libraries.slice(0, visibleCount).map((library, index) => ( // 처음 visibleCount만큼만 표시
-                        <li key={index} className="library-item">
-                            <h3
-                                className="library-name"
-                                onClick={() => {
-                                    moveToLibrary(map, library.latitude, library.longitude);
-                                    document.getElementById('map')?.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'start'
-                                    });
-                                }}
-                                style={{cursor: 'pointer', color: 'blue', textDecoration: 'underline'}}
-                            >
-                                {library.libName}
+                        <li key={index} className="library-item" style={{cursor: 'default'}}>
+                            <h3 className="library-name" style={{cursor: 'default'}}>
+                                <span
+                                    onClick={() => {
+                                        moveToLibrary(map, library.latitude, library.longitude);
+                                        document.getElementById('map')?.scrollIntoView({
+                                            behavior: 'smooth',
+                                            block: 'center',
+                                        });
+                                    }}
+                                    style={{cursor: 'pointer'}}
+                                >
+                                    {library.libName}
+                                </span>
                             </h3>
 
                             <p>주소: {library.address}</p>
