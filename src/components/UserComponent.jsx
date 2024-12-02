@@ -1,132 +1,260 @@
-import React, {useEffect, useState} from 'react';
-import {findUser, updateUser} from '../services/UserService';
+import React, { useEffect, useState } from 'react';
 import {getFavorites, removeFavorite, getRecommendedBooks} from '../services/FavoriteService';
-import {useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../css/UserComponent.css'
 
 export default function UserComponent() {
-    const [userData, setUserData] = useState(null);
-    const [username, setUsername] = useState('');
-    const [message, setMessage] = useState('');
-    const [books, setBooks] = useState([]);
-    const [bookInfo, setBookInfo] = useState({
-        title: '',
-        library: '',
-        loanDate: '',
-        returnDate: '',
-    });
-    const [favorites, setFavorites] = useState([]);
-    const [recommendedBooks, setRecommendedBooks] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
-    const itemsPerPage = 3;
-    const navigate = useNavigate();
+  const [userData, setUserData] = useState(null);
+  const [message, setMessage] = useState('');
+  const [books, setBooks] = useState([]);
+  const [bookInfo, setBookInfo] = useState({
+    title: '',
+    library: '',
+    loanDate: '',
+    returnDate: '',
+  });
+  const [favorites, setFavorites] = useState([]);
+  const [recommendedBooks, setRecommendedBooks] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 3;
+  const [isEditingField, setIsEditingField] = useState({
+    username: false,
+    email: false,
+    password: false,
+  });
+  const [formData, setFormData] = useState({});
+  const navigate = useNavigate();
 
+  const handleBack = async () => {
+    navigate('/');
+  }
 
-    const handleBack = () => {
-        navigate('/');
-    };
+  const handleFindUser = async () => {
+    console.log('check calling');
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      setMessage('No access token found.');
+      return;
+    }
+    try {
+      const response = await axios.get('http://localhost:8080/api/v1/user', {
+        headers: { Authorization: `Bearer ${accessToken}`},
+      });
+      console.log("handleFindUser response : ", response);
+      setUserData(response.data);
+    } catch (error) {
+      console.error('Error handleFindUser response:', error.response);
 
-    const handleFindUser = async () => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            setMessage('No access token found.');
-            return;
-        }
+      if (error.response && error.response.status === 401) {
         try {
-            const response = await findUser(accessToken);
-            setUserData(response);
-        } catch (error) {
-            setMessage('Failed to fetch user data.');
-        }
-    };
+          const refreshToken = localStorage.getItem('refreshToken');
 
-    const handleUpdateUser = async () => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            setMessage('No access token found.');
+          if (!refreshToken) {
+            setMessage('Failed to find refresh token.');
             return;
+          }
+
+          const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
+            headers: { REFRESH_TOKEN: refreshToken },
+          });
+
+          const newAccessToken = refreshResponse.data;
+          localStorage.setItem('accessToken', newAccessToken);
+          setMessage('Token refreshed successfully.');
+          console.log('new accessToken:', newAccessToken);
+
+          const retryResponse = await axios.get('http://localhost:8080/api/v1/user', {
+            headers: { Authorization: `Bearer ${newAccessToken}`},
+          });
+
+          console.log('retry response : ', retryResponse);
+
+          setUserData(retryResponse.data);
+        } catch (refreshError) {
+          console.error('Failed to refresh token:', refreshError.response);
+
+          if(refreshError.response?.status === 403) {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            navigate('/login');
+          }
         }
+      } else if (error.response.status === 500) {
+        setMessage('모든 값을 입력해주세요');
+      } else {
+        setMessage('Failed to call user');
+      }
+    }
+  };
+
+  const handleUpdateUser = async (field) => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      setMessage('No access token found.');
+      return;
+    }
+    try {
+      const updatedData = { [field]: formData[field] || userData[field] };
+
+      console.log('updatedData being sent:', updatedData);
+      const response = await axios.put('http://localhost:8080/api/v1/user', updatedData, {
+        headers: { Authorization: `Bearer ${accessToken}`},
+      });
+      console.log("handleUpdateUser response : ", response);
+
+      setMessage('User updated successfully.');
+      setUserData({ ...userData, ...updatedData});
+      setIsEditingField((prev) => ({ ...prev, [field]: false }));
+    } catch (error) {
+      console.error('Error response:', error.response);
+
+      if (error.response && error.response.status === 401) {
         try {
-            await updateUser(accessToken, {username});
-            setMessage('User updated successfully.');
-        } catch (error) {
-            setMessage('Failed to update user.');
+          const refreshToken = localStorage.getItem('refreshToken');
+
+          if (!refreshToken) {
+            setMessage('Failed to find refresh token.');
+            return;
+          }
+
+          const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
+            headers: { REFRESH_TOKEN: refreshToken },
+          });
+
+          const newAccessToken = refreshResponse.data;
+          localStorage.setItem('accessToken', newAccessToken);
+          setMessage('Token refreshed successfully.');
+          console.log('new accessToken:', newAccessToken);
+
+          console.log('updatedData being sent:', updatedData);
+          const retryResponse = await axios.put('http://localhost:8080/api/v1/user', updatedData, {
+            headers: { Authorization: `Bearer ${newAccessToken}`},
+          });
+
+          console.log('retry response : ', retryResponse);
+
+          setMessage('User updated successfully.');
+          setUserData({ ...userData, ...updatedData });
+          setIsEditingField((prev) => ({ ...prev, [field]: false }));
+        } catch (refreshError) {
+          console.error('Failed to refresh token:', refreshError.response);
+
+          if(refreshError.response?.status === 403) {
+            setMessage('다시 로그인해주세요');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            navigate('/login');
+          }
         }
+      } else if (error.response.status === 500) {
+        setMessage('모든 값을 입력해주세요');
+      } else {
+        setMessage('Failed to add book.');
+      }
+    }
+  };
+
+  const handleCancelEdit = (field) => {
+    if (isEditingField[field]) {
+      setFormData((prev) => ({ ...prev, [field]: userData[field]}));
+      setIsEditingField((prev) => ({ ...prev, [field]: false }));
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  useEffect(() => {
+    console.log('calling test');
+    handleFindUser();
+    console.log('username : ', isEditingField.username);
+    console.log('email : ', isEditingField.email);
+    console.log('password : ', isEditingField.password);
+  }, []);
+  
+  useEffect(() => {
+    console.log('rendering. isEditingField:', isEditingField);
+  }, [isEditingField]);
+
+  const handleAddBook = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    console.log('accesstoken : ', accessToken);
+    if (!accessToken) {
+      setMessage('No access token found.');
+      return;
+    }
+
+    if (!validateDates()) {
+      return;
+    }
+
+    const newBook = {
+      ...bookInfo
     };
 
-    const handleAddBook = async () => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            setMessage('No access token found.');
-            return;
-        }
+    console.log("book : ", newBook);
 
-        //날짜 검증 추가
-        if (!validateDates()) {
-            return;
-        }
+    try {
+      const response = await axios.post('http://localhost:8080/api/books/add', newBook, {
+        headers: { Authorization: `Bearer ${accessToken}`},
+      });
+      console.log("response : ", response);
 
+      setBooks([...books, response.data]);
+      setBookInfo({ title: '', library: '', loanDate: '', returnDate: ''});
+      setMessage('Book added successfully.');
+    } catch (error) {
+      console.error('Error response:', error.response);
+
+      if (error.response && error.response.status === 401) {
         try {
-            const response = await axios.post('http://localhost:8080/api/books/add', newBook, {
-                headers: { Authorization: `Bearer ${accessToken}`},
-            });
-            console.log("response : ", response);
+          const refreshToken = localStorage.getItem('refreshToken');
 
-            setBooks([...books, response.data]);
-            setBookInfo({ title: '', library: '', loanDate: '', returnDate: ''});
-            setMessage('Book added successfully.');
-        } catch (error) {
-            console.error('Error response:', error.response);
+          if (!refreshToken) {
+            setMessage('Failed to find refresh token.');
+            return;
+          }
 
-            if (error.response && error.response.status === 401) {
-                try {
-                    const refreshToken = localStorage.getItem('refreshToken');
+          const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
+            headers: { REFRESH_TOKEN: refreshToken },
+          });
 
-                    if (!refreshToken) {
-                        setMessage('Failed to find refresh token.');
-                        return;
-                    }
+          const newAccessToken = refreshResponse.data;
+          localStorage.setItem('accessToken', newAccessToken);
+          setMessage('Token refreshed successfully.');
+          console.log('new accessToken:', newAccessToken);
 
-                    const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
-                        headers: { REFRESH_TOKEN: refreshToken },
-                    });
+          const retryResponse = await axios.post('http://localhost:8080/api/books/add', newBook, {
+            headers: { Authorization: `Bearer ${newAccessToken}`},
+          });
 
-                    const newAccessToken = refreshResponse.data;
-                    localStorage.setItem('accessToken', newAccessToken);
-                    setMessage('Token refreshed successfully.');
-                    console.log('new accessToken:', newAccessToken);
+          console.log('retry response : ', retryResponse);
 
-                    const retryResponse = await axios.post('http://localhost:8080/api/books/add', newBook, {
-                        headers: { Authorization: `Bearer ${newAccessToken}`},
-                    });
+          setBooks([...books, retryResponse.data]);
+          setBookInfo({ title: '', library: '', loanDate: '', returnDate: ''});
+          setMessage('Book added successfully after refreshing token.');
+        } catch (refreshError) {
+          console.error('Failed to refresh token:', refreshError.response);
 
-                    console.log('retry response : ', retryResponse);
-
-                    setBooks([...books, retryResponse.data]);
-                    setBookInfo({ title: '', library: '', loanDate: '', returnDate: ''});
-                    setMessage('Book added successfully after refreshing token.');
-                } catch (refreshError) {
-                    console.error('Failed to refresh token:', refreshError.response);
-
-                    if(refreshError.response?.status === 403) {
-                        setMessage('다시 로그인해주세요');
-                        localStorage.removeItem('accessToken');
-                        localStorage.removeItem('refreshToken');
-                        navigate('/login');
-                    }
-                }
-            } else if (error.response.status === 500) {
-                setMessage('모든 값을 입력해주세요');
-            } else {
-                setMessage('Failed to add book.');
-            }
+          if(refreshError.response?.status === 403) {
+            setMessage('다시 로그인해주세요');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            navigate('/login');
+          }
         }
-    };
+      } else if (error.response.status === 500) {
+        setMessage('모든 값을 입력해주세요');
+      } else {
+        setMessage('Failed to add book.');
+      }
+    }
+  };
 
-    // 날짜 검증 추가
-    const validateDates = () => {
-        const {loanDate, returnDate} = bookInfo;
+  const validateDates = () => {
+    const {loanDate, returnDate} = bookInfo;
         const today = new Date().toISOString().split('T')[0]; // 현재 날짜 (YYYY-MM-DD 형식)
 
         if (!loanDate || !returnDate) {
@@ -145,172 +273,164 @@ export default function UserComponent() {
         }
 
         return true;
-    };
+  }
 
-    //삭제 (명목상 추가한거라 구현하신 기능으로 바꿔주세요)
-    const handleDeleteBook = async (bookId) => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            setMessage('No access token found.');
-            return;
-        }
-        try {
-            await axios.delete(`http://localhost:8080/api/books/${bookId}`, {
-                headers: {Authorization: `Bearer ${accessToken}`},
-            });
-            setBooks(books.filter((book) => book.id !== bookId));
-            setMessage('Book deleted successfully.');
-        } catch (error) {
-            setMessage('Failed to delete book.');
-        }
-    };
+  //삭제 (명목상 추가한거라 구현하신 기능으로 바꿔주세요)
+  const handleDeleteBook = async (bookId) => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+        setMessage('No access token found.');
+        return;
+    }
+    try {
+        await axios.delete(`http://localhost:8080/api/books/${bookId}`, {
+            headers: {Authorization: `Bearer ${accessToken}`},
+        });
+        setBooks(books.filter((book) => book.id !== bookId));
+        setMessage('Book deleted successfully.');
+    } catch (error) {
+        setMessage('Failed to delete book.');
+    }
+  };
 
-    const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setBookInfo({...bookInfo, [name]: value});
-    };
+  useEffect(() => {
+    console.log('calling test 2');
+    const fetchBooks = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      try {
+        const response = await axios.get('http://localhost:8080/api/books/get', {
+          headers: { Authorization: `Bearer ${accessToken}`},
+        });
+        console.log('Response data:', response.data);
+        setBooks(response.data);
+      } catch (error) {
+        setMessage('Failed to add book.');
+        console.error('Error response:', error.response);
 
-    useEffect(() => {
-        const fetchBooks = async () => {
-            const accessToken = localStorage.getItem('accessToken');
-            try {
-                const response = await axios.get('http://localhost:8080/api/books/get', {
-                    headers: { Authorization: `Bearer ${accessToken}`},
-                });
-                console.log('Response data:', response.data);
-                setBooks(response.data);
-            } catch (error) {
-                setMessage('Failed to add book.');
-                console.error('Error response:', error.response);
-
-                if (error.response && error.response.status === 401) {
-                    try {
-                        const refreshToken = localStorage.getItem('refreshToken');
-
-                        if (!refreshToken) {
-                            setMessage('Failed to find refresh token.');
-                            return;
-                        }
-
-                        const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
-                            headers: { REFRESH_TOKEN: refreshToken },
-                        });
-
-                        const newAccessToken = refreshResponse.data;
-                        localStorage.setItem('accessToken', newAccessToken);
-                        setMessage('Token refreshed successfully.');
-                        console.log('new accessToken:', newAccessToken);
-
-                        const retryResponse2 = await axios.get('http://localhost:8080/api/books/get', {
-                            headers: { Authorization: `Bearer ${newAccessToken}`},
-                        });
-
-                        console.log('retry response : ', retryResponse2);
-                        setBooks(retryResponse2.data);
-                    } catch (refreshError) {
-                        if(refreshError.response?.status === 403) {
-                            setMessage('다시 로그인해주세요');
-                            localStorage.removeItem('accessToken');
-                            localStorage.removeItem('refreshToken');
-                            navigate('/login');
-                        }
-                    }
-                }
+        if (error.response && error.response.status === 401) {
+          try {
+            const refreshToken = localStorage.getItem('refreshToken');
+  
+            if (!refreshToken) {
+              setMessage('Failed to find refresh token.');
+              return;
             }
-        };
-        fetchBooks();
-    }, []);
+  
+            const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
+              headers: { REFRESH_TOKEN: refreshToken },
+            });
+  
+            const newAccessToken = refreshResponse.data;
+            localStorage.setItem('accessToken', newAccessToken);
+            setMessage('Token refreshed successfully.');
+            console.log('new accessToken:', newAccessToken);
 
-    // 배너에 띄우려고 추가했습니다.
-    // 컴포넌트 렌더링 시 사용자 정보를 자동으로 불러오기
-    useEffect(() => {
-        const fetchUserData = async () => {
-            await handleFindUser();
-        };
-        fetchUserData();
-    }, []);
+            const retryResponse2 = await axios.get('http://localhost:8080/api/books/get', {
+              headers: { Authorization: `Bearer ${newAccessToken}`},
+            });
 
-    ////////////////////////////////즐겨찾기
-    // 즐겨찾기 목록 가져오기
-    const fetchFavorites = async () => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) return;
-        try {
-            const favoriteList = await getFavorites(accessToken);
-            setFavorites(favoriteList);
-        } catch (error) {
-            setMessage('Failed to fetch favorites.');
+            console.log('retry response : ', retryResponse2);
+            setBooks(retryResponse2.data);
+          } catch (refreshError) {
+            if(refreshError.response?.status === 403) {
+              setMessage('다시 로그인해주세요');
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('refreshToken');
+              navigate('/login');
+            }
+          }
         }
+      }
     };
+    fetchBooks();
+  }, []);
 
-    // 즐겨찾기 제거
-    const handleRemoveFavorite = async (bookIsbn) => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            setMessage('No access token found.');
-            return;
-        }
-        try {
-            await removeFavorite(accessToken, bookIsbn);
-            setFavorites(favorites.filter((fav) => fav.bookIsbn !== bookIsbn));
-            setMessage('Favorite removed successfully.');
-        } catch (error) {
-            setMessage('Failed to remove favorite.');
-        }
+  useEffect(() => {
+    const fetchUserData = async () => {
+      await handleFindUser();
     };
-    useEffect(() => {
-        const fetchUserAndBooks = async () => {
-            await handleFindUser();
-            fetchFavorites(); // 즐겨찾기 목록 가져오기
-        };
-        fetchUserAndBooks();
-    }, []);
+    fetchUserData();
+  }, []);
 
+  ////////////////////////////////즐겨찾기
+  // 즐겨찾기 목록 가져오기
+  const fetchFavorites = async () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    try {
+        const favoriteList = await getFavorites(accessToken);
+        setFavorites(favoriteList);
+    } catch (error) {
+        setMessage('Failed to fetch favorites.');
+    }
+  };
 
-    ////////////////////////////////추천도서
+  // 즐겨찾기 제거
+  const handleRemoveFavorite = async (bookIsbn) => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+          setMessage('No access token found.');
+          return;
+      }
+      try {
+          await removeFavorite(accessToken, bookIsbn);
+          setFavorites(favorites.filter((fav) => fav.bookIsbn !== bookIsbn));
+          setMessage('Favorite removed successfully.');
+      } catch (error) {
+          setMessage('Failed to remove favorite.');
+      }
+  };
+
+  useEffect(() => {
+      const fetchUserAndBooks = async () => {
+          await handleFindUser();
+          fetchFavorites(); // 즐겨찾기 목록 가져오기
+      };
+      fetchUserAndBooks();
+  }, []);
+
+  ////////////////////////////////추천도서
     // 제목 글자 수 제한
     const truncateText = (text, maxLength) => {
-        return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-    };
+      return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
 
-    useEffect(() => {
-        const fetchRecommendations = async () => {
-            const accessToken = localStorage.getItem("accessToken");
-            if (!accessToken) {
-                console.error("No access token found");
-                return;
-            }
-            try {
-                const recommendations = await getRecommendedBooks(accessToken);
-                console.log("Fetched recommendations:", recommendations); // 디버깅용
-                setRecommendedBooks(recommendations);
-            } catch (error) {
-                console.error("Failed to fetch recommendations:", error);
-                setMessage("Failed to fetch recommended books.");
-            }
-        };
+  useEffect(() => {
+      const fetchRecommendations = async () => {
+          const accessToken = localStorage.getItem("accessToken");
+          if (!accessToken) {
+              console.error("No access token found");
+              return;
+          }
+          try {
+              const recommendations = await getRecommendedBooks(accessToken);
+              console.log("Fetched recommendations:", recommendations); // 디버깅용
+              setRecommendedBooks(recommendations);
+          } catch (error) {
+              console.error("Failed to fetch recommendations:", error);
+          }
+      };
 
-        fetchRecommendations();
-    }, []);
-
-
-    const handleTitleClick = (book) => {
-        console.log("Clicked Book:", book);
-        const bookDetails = {
-            isbn13: book.isbn13 || "N/A",
-            bookname: book.bookname || "Unknown Title",
-            authors: book.authors || book.author || "Unknown Author",
-            publisher: book.publisher || "Unknown Publisher",
-            publication_year: book.publication_year || "Unknown Year",
-            bookImageURL: book.bookImageURL || "",
-        };
-        console.log("Navigating with bookDetails:", bookDetails); // 디버깅용 로그
-        navigate(`/book/details`, {state: {bookDetails}});
-    };
+      fetchRecommendations();
+  }, []);
 
 
-    return (
-        <div className="main-container">
+  const handleTitleClick = (book) => {
+      console.log("Clicked Book:", book);
+      const bookDetails = {
+          isbn13: book.isbn13 || "N/A",
+          bookname: book.bookname || "Unknown Title",
+          authors: book.authors || book.author || "Unknown Author",
+          publisher: book.publisher || "Unknown Publisher",
+          publication_year: book.publication_year || "Unknown Year",
+          bookImageURL: book.bookImageURL || "",
+      };
+      console.log("Navigating with bookDetails:", bookDetails); // 디버깅용 로그
+      navigate(`/book/details`, {state: {bookDetails}});
+  };
+
+  return (
+    <div className="main-container">
             {/* 좌측 네비게이션 바 */}
             <nav className="sidebar">
                 <ul className="nav-list">
@@ -508,5 +628,5 @@ export default function UserComponent() {
                 {message && <p>{message}</p>}
             </div>
         </div>
-    );
+  );
 }
