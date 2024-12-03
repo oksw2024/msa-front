@@ -1,8 +1,8 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getBooks } from '../services/BookSearchService';
 import '../css/BookSearchComponent.css';
+
 
 const BookSearchComponent = () => {
     const location = useLocation();
@@ -71,100 +71,107 @@ const BookSearchComponent = () => {
         <div className="search-page">
             {/* 검색창 */}
             <div className="search-bar">
-                <form onSubmit={handleSearchSubmit} className="search-form">
-                    <select
-                        value={searchType}
-                        onChange={(e) => setSearchType(e.target.value)}
-                        className="search-select"
-                    >
-                        <option value="">All</option>
-                        <option value="title">Book Name</option>
-                        <option value="author">Author Name</option>
-                    </select>
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search for books..."
-                        className="search-input"
-                    />
-                    <button type="submit" className="search-button">검색</button>
-                </form>
-            </div>
-
-            {/* 검색 결과 */}
-            <div className="search-results">
-                <h3 className="search-title">Search Results for &#34;{searchQuery}&#34;</h3>
-                <div className="book-list">
-                    {Array.isArray(results) && results.length > 0 ? (
-                        results.map((result, index) => (
-                            <div key={index} className="book-item">
-                                <img src={result.bookImageURL} alt={result.bookname} className="book-image" />
-                                <div className="book-details">
-                                    <h4 className="book-title">{result.bookname}</h4>
-                                    <p className="book-author">by {result.authors}</p>
-                                    <p className="book-year">출판연도: {result.publicationYear}</p>
-                                    <a
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            navigate(`/book/details`, { state: { bookDetails: result } });
-                                        }}
-                                        className="book-link">상세정보</a>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p>No results found.</p>
-                    )}
+                <div className="search-container">
+                    <form onSubmit={handleSearchSubmit}>
+                        <select
+                            value={searchType}
+                            onChange={(e) => setSearchType(e.target.value)}
+                            className="search-filter"
+                        >
+                            <option value="">전체 검색</option>
+                            <option value="title">제목</option>
+                            <option value="author">저자</option>
+                        </select>
+                        <div className="search-input-wrapper">
+                            <i className="fas fa-search search-icon"></i>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="검색어를 입력하세요"
+                                className="search-input"
+                            />
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            {/* 페이징 버튼 */}
-            {totalPages > 0 && (
-                <nav className="pagination-container">
-                    <ul className="pagination">
-                        {/* 이전 페이지 버튼 */}
-                        <li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
-                            <button
-                                className="page-link"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 0}
-                                aria-label="Previous page"
-                                tabIndex={currentPage === 0 ? -1 : 0}
-                            >
-                                &laquo;
-                            </button>
-                        </li>
-                        {/* 페이지 번호 버튼 */}
-                        {generatePageNumbers().map((pageNum) => (
-                            <li key={pageNum} className={`page-item ${pageNum === currentPage ? 'active' : ''}`}>
+            {/* 검색 결과 */}
+            <section>
+                <div className="search-results">
+                    <h3 className="search-result-title"><span style={{color: '#3f7aaa'}}>{searchQuery}</span> 검색 결과</h3>
+                    <div className="search-book-list">
+                        {Array.isArray(results) && results.length > 0 ? (
+                            results.map((result, index) => (
+                                <div key={index} className="search-book-item">
+                                    <img src={result.bookImageURL} alt={result.bookname} className="search-book-image"/>
+                                    <div>
+                                        <h4 className="search-book-result-title">{result.bookname}</h4>
+                                        <p className="search-book-author">{result.authors.replace(/;/g, ' | ')}</p>
+                                        <p className="search-book-publisher">{result.publisher}</p>
+                                        <p className="search-book-year">출판연도: {result.publication_year}</p>
+                                        <a
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigate(`/book/details`, {state: {bookDetails: result}});
+                                            }}
+                                            className="search-book-link">상세정보</a>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No results found.</p>
+                        )}
+                    </div>
+                </div>
+            </section>
+
+                {/* 페이징 버튼 */}
+                {totalPages > 0 && (
+                    <nav className="pagination-container">
+                        <ul className="pagination">
+                            {/* 이전 페이지 버튼 */}
+                            <li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
                                 <button
-                                    className="page-link" onClick={() => handlePageChange(pageNum)}
-                                    aria-label={`Page ${pageNum + 1}`}
-                                    tabIndex={0}
-                                    >
-                                    {pageNum + 1}
+                                    className="page-link"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 0}
+                                    aria-label="Previous page"
+                                    tabIndex={currentPage === 0 ? -1 : 0}
+                                >
+                                    &laquo;
                                 </button>
                             </li>
-                        ))}
-                        {/* 다음 페이지 버튼 */}
-                        <li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
-                            <button
-                                className="page-link"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages - 1}
-                                aria-label="Next page"
-                                tabIndex={currentPage === totalPages - 1 ? -1 : 0}
-                            >
-                                &raquo;
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
-            )}
+                            {/* 페이지 번호 버튼 */}
+                            {generatePageNumbers().map((pageNum) => (
+                                <li key={pageNum} className={`page-item ${pageNum === currentPage ? 'active' : ''}`}>
+                                    <button
+                                        className="page-link" onClick={() => handlePageChange(pageNum)}
+                                        aria-label={`Page ${pageNum + 1}`}
+                                        tabIndex={0}
+                                    >
+                                        {pageNum + 1}
+                                    </button>
+                                </li>
+                            ))}
+                            {/* 다음 페이지 버튼 */}
+                            <li className={`page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}`}>
+                                <button
+                                    className="page-link"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages - 1}
+                                    aria-label="Next page"
+                                    tabIndex={currentPage === totalPages - 1 ? -1 : 0}
+                                >
+                                    &raquo;
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                )}
         </div>
-    );
+);
 };
 
 export default BookSearchComponent;

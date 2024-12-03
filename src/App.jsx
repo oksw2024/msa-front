@@ -8,6 +8,8 @@ import BookSearchComponent from './components/BookSearchComponent';
 import './App.css';
 import PlusBookComponent from './components/PlusBookComponent';
 import BookDetailComponent from './components/BookDetailComponent';
+import Header from "./components/Header.jsx";
+import Footer from "./components/Footer.jsx";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -41,27 +43,33 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={<MainScreen isLoggedIn={isLoggedIn} handleLogout={handleLogout} />}
-        />
-        <Route
-          path="/login"
-          element={<LoginComponent onLogin={handleLogin} />}
-        />
-        <Route path="/signup" element={<SignupComponent />} />
-        <Route
-          path="/user"
-          element={<UserComponent />}
-        />
-        <Route path="/book/list" element={<BookSearchComponent />} />
-        <Route path="/book/plus" element={<PlusBookComponent />} />
-        <Route path="/book/details" element={<BookDetailComponent />} />
-      </Routes>
-    </Router>
+      <Router>
+        <div className="app-layout">
+          <Header isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+          <main className="content">
+            <Routes>
+              <Route
+                  path="/"
+                  element={<MainScreen isLoggedIn={isLoggedIn} handleLogout={handleLogout} />}
+              />
+              <Route
+                  path="/login"
+                  element={<LoginComponent onLogin={handleLogin} />}
+              />
+              <Route path="/signup" element={<SignupComponent />} />
+              <Route path="/user" element={<UserComponent />} />
+              <Route path="/book/list" element={<BookSearchComponent />} />
+              <Route path="/book/plus" element={<PlusBookComponent />} />
+              <Route path="/book/details" element={<BookDetailComponent />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
   );
 }
+
+
+
 
 export default App;

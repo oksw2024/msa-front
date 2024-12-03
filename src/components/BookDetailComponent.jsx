@@ -42,7 +42,7 @@ const BookDetailComponent = () => {
         }
     }, [bookDetails]);
 
-    // 즐겨찾기 상태 변경 
+    // 즐겨찾기 상태 변경
     const toggleFavorite = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
@@ -52,9 +52,9 @@ const BookDetailComponent = () => {
 
         try {
             if (isFavorite) {
-                await removeFavorite(accessToken, bookDetails.isbn13);
+                await removeFavorite(bookDetails.isbn13);
             } else {
-                await addFavorite(accessToken, bookDetails); // 책 상세 정보를 전달
+                await addFavorite(bookDetails); // 책 상세 정보를 전달
             }
             setIsFavorite(!isFavorite);
         } catch (error) {
@@ -250,7 +250,7 @@ const BookDetailComponent = () => {
         return (
             <div className="book-details-page">
                 <h2>서적 정보가 존재하지 않습니다.</h2>
-                <button onClick={() => navigate(-1)} className="login-back-button">뒤로가기</button>
+                <a onClick={() => navigate(-1)} className="detail-back-button">뒤로가기</a>
             </div>
         );
     }
@@ -263,7 +263,7 @@ const BookDetailComponent = () => {
                     e.preventDefault(); // 기본 동작 방지
                     navigate(-1); // 뒤로가기 기능
                 }}
-                className="back-button"
+                className="detail-back-button"
             >뒤로가기
             </a>
             <div className="book-detail-content">

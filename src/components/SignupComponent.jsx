@@ -121,64 +121,99 @@ export default function SignupComponent() {
   };
 
   return (
-    <div className='center'>
-      <h2>회원가입</h2>
-      <input
-        type="text"
-        placeholder="사용자 이름"
-        value={username}
-        onBlur={() => handleBlur('username')}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      {nameMessage && <p>{nameMessage}</p>}
-      <input
-        type="text"
-        placeholder="아이디"
-        value={loginId}
-        onBlur={() => handleBlur('loginId')}
-        onChange={(e) => setLoginId(e.target.value)}
-      />
-      {idMessage && <p>{idMessage}</p>}
-      <div className='password-container'>
-        <input
-          type={showPassword ? "text" : "password"}
-          placeholder="비밀번호"
-          value={password}
-          onBlur={() => handleBlur('password')}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={togglePasswordVisibility}
-        >{showPassword ? "숨기기" : "보기"}</button>
+      <div className="card-container">
+        <button className='login-back-button' onClick={handleBack}>
+          뒤로가기
+        </button>
+        <div className="card">
+          <h2>회원가입</h2>
+
+          <div className={`signup-input-container ${nameMessage ? 'error' : ''}`}>
+            <input
+                type="text"
+                id="username"
+                className="signup-input"
+                placeholder=" "
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+            />
+            <label htmlFor="username" className="signup-label">사용자 이름</label>
+            {nameMessage && <p className="signup-error">{nameMessage}</p>}
+          </div>
+
+          <div className={`signup-input-container ${idMessage ? 'error' : ''}`}>
+            <input
+                type="text"
+                id="loginId"
+                className="signup-input"
+                placeholder=" "
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
+            />
+            <label htmlFor="loginId" className="signup-label">아이디</label>
+            {idMessage && <p className="signup-error">{idMessage}</p>}
+          </div>
+
+          <div className={`signup-input-container ${passwordMessage ? 'error' : ''}`}>
+            <div className="signup-password-wrapper">
+              <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className="signup-input"
+                  placeholder=" "
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+              />
+              <label htmlFor="password" className="signup-label">비밀번호</label>
+              <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <i className="fas fa-eye-slash"></i> : <i className="fas fa-eye"></i>}
+              </button>
+            </div>
+            {passwordMessage && <p className="signup-error">{passwordMessage}</p>}
+          </div>
+
+          <div className={`signup-input-container ${checkMessage ? 'error' : ''}`}>
+            <div className="signup-password-wrapper">
+              <input
+                  type={showPasswordTest ? "text" : "password"}
+                  id="passwordTest"
+                  className="signup-input"
+                  placeholder=" "
+                  value={passwordTest}
+                  onChange={(e) => setPasswordTest(e.target.value)}
+              />
+              <label htmlFor="passwordTest" className="signup-label">비밀번호 확인</label>
+              <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={togglePasswordTestVisivility}
+              >
+                {showPasswordTest ? <i className="fas fa-eye-slash"></i> : <i className="fas fa-eye"></i>}
+              </button>
+            </div>
+            {checkMessage && <p className="signup-error">{checkMessage}</p>}
+          </div>
+
+          <div className={`signup-input-container ${emailMessage ? 'error' : ''}`}>
+            <input
+                type="email"
+                id="email"
+                className="signup-input"
+                placeholder=" "
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+            />
+            <label htmlFor="email" className="signup-label">이메일</label>
+            {emailMessage && <p className="signup-error">{emailMessage}</p>}
+          </div>
+          <div className="signup-button-container">
+            <button onClick={handleSignup}>가입</button>
+          </div>
+        </div>
       </div>
-      {passwordMessage && <p>{passwordMessage}</p>}
-      <div className='password-container'>
-        <input
-          type={showPasswordTest ? "text" : "password"}
-          placeholder="비밀번호 확인"
-          value={passwordTest}
-          onBlur={() => handleBlur('passwordTest')}
-          onChange={(e) => setPasswordTest(e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={togglePasswordTestVisivility}
-        >{showPasswordTest ? "숨기기" : "보기"}</button>
-      </div>
-      {checkMessage && <p>{checkMessage}</p>}
-      <input
-        type="text"
-        placeholder="이메일"
-        value={email}
-        onBlur={() => handleBlur('email')}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      {emailMessage && <p>{emailMessage}</p>}
-      <div className='button-container'>
-        <button onClick={handleSignup}>가입</button>
-        <button onClick={handleBack}>취소</button>
-      </div>
-    </div>
   );
 }

@@ -6,294 +6,458 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
+    background-color: #ffffff;
     color: #333;
 }
 
-/* Search Bar Styling */
-.search-bar {
+/* Header Styling */
+header {
     display: flex;
-    justify-content: center;
-    padding: 20px;
-    background-color: #2b4d68;
-}
-
-.search-bar input[type="text"] {
-    width: 60%;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 30px;
-    border: none;
-    outline: none;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Recommend Styling */
-.horizontal-list {
-    list-style-type: none;
-    display: flex;
-    gap: 20px;
-    padding: 0;
-    margin: 0;
-    justify-content: center;
-}
-
-.horizontal-list li {
-    width: 400px; /* 너비 */
-    height: auto; /* 높이 */
-    padding: 20px; /* 내부 여백 */
-    margin: 10px; /* 외부 여백 */
-    border: 1px solid #ddd; /* 테두리 */
-    display: flex; /* 내부정렬 */
-    flex-direction: column; /* 세로 정렬 */
-    align-items: center; /* 가로 중앙 정렬 */
-    justify-content: center; /* 세로 중앙 정렬 */
-    background-color: #f9f9f9; /* 배경색 */
-    border-radius: 8px; /* 둥근 모서리 */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-}
-
-.mainbook-image {
-    width: 70%;
-    height: auto;
-    object-fit: cover;
-    display: block;
-    margin: 0 auto;
-}
-
-.book-title {
-    font-size: 16px;
-    text-align: center;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-.pagination-controls {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-  
-  .pagination-button {
-    padding: 10px 20px;
-    margin: 0 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .pagination-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-
-/* Banner Styling */
-.banner {
-    background-color: #2b4d68;
-    color: #fff;
-    padding: 60px 20px;
-    text-align: center;
-}
-
-.banner h2 {
-    font-size: 28px;
-    margin-bottom: 10px;
-}
-
-.banner p {
-    font-size: 18px;
-}
-
-/* Content Section Styling */
-.content-section {
-    padding: 40px 20px;
-    max-width: 1200px;
-    margin: auto;
-}
-
-.section-title {
-    font-size: 22px;
-    margin-bottom: 20px;
-    color: #1a3e5c;
-}
-
-/* Card Styling */
-.card-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.card {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
-    text-align: center;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-}
-
-.card h3 {
-    font-size: 18px;
-    color: #333;
-}
-
-.card p {
-    font-size: 14px;
-    color: #666;
-    margin-top: 10px;
-}
-
-/* Footer Styling */
-footer {
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 40px;
     background-color: #1a3e5c;
     color: #fff;
-    padding: 20px;
-    text-align: center;
-    font-size: 14px;
 }
 
-footer a {
+header h1 {
+    font-size: 18px;
+}
+
+header nav {
     color: #fff;
     text-decoration: none;
-    margin: 0 10px;
+    margin-left: 20px;
+    font-size: 14px;
     transition: color 0.3s;
 }
 
-footer a:hover {
-    color: #ffd700;
+
+/* Banner Styling */
+.banner-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 300px;
+    background: url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D.jpg') no-repeat center center; /* 배경 이미지 설정 */
+    background-size: cover; /* 배경 이미지가 전체를 덮도록 설정 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Modal Styling */
-.modal {
-    display: none;
-    position: fixed;
+.banner-container::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    justify-content: center;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1)); /* 위에서 아래로 그라데이션 */
+    z-index: 2; /* 검정색 레이어는 더 위에 */
+}
+
+.banner-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(181, 181, 181, 0.5);
+    z-index: 1; /* 회색 레이어는 아래 */
+}
+
+
+.slider {
+    display: flex;
+    transition: transform 0.8s ease-in-out;
+    width: calc(100% * 5); /* 슬라이드 개수에 따라 동적으로 */
+    position: relative;
+    z-index: 2; /* 배너 내용 위로 배치 */
+}
+
+.slide {
+    flex: 1 0 100%;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: #fff;
-    padding: 20px;
-    width: 400px;
-    border-radius: 10px;
+    justify-content: center;
     text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-.modal-content h2 {
-    margin-bottom: 20px;
+.slide h2 {
+    font-size: 1.5rem;
+    color: #eeeeef;
+    margin-bottom: 10px;
+    z-index: 2; /* 배너 내용 위로 배치 */
 }
 
-.modal-content input {
-    width: 80%;
-    padding: 10px;
-    margin: 10px 0;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+.slide p {
+    font-size: 1rem;
+    color: #e3e3e3;
+    z-index: 2; /* 배너 내용 위로 배치 */
 }
 
-.modal-content button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #1a3e5c;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.modal-content button:hover {
-    background-color: #2b4d68;
-}
-
-.close-btn {
-    background-color: #ff4d4d;
-}
-
-/* 네비게이션 바 스타일 */
-.nav-bar {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 10px;
-    background-color: #1a3e5c;
-}
-
-.nav-bar button {
-    background-color: #666;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.nav-bar button:hover {
-    background-color: #555;
-}
-
-/* 검색 바 스타일 */
-.search-container {
+/* Pagination dots */
+.dots {
+    position: absolute;
+    bottom: 15px;
     display: flex;
     justify-content: center;
-    padding: 20px;
-    background-color: #f9f9f9;
-}
-
-.search-form {
-    display: flex;
     gap: 10px;
     width: 100%;
-    max-width: 600px;
 }
 
-.search-select {
-    padding: 10px;
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ddd;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.dot.active {
+    background-color: #1780d3;
+}
+
+
+/* 검색 바 */
+.search-bar {
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+    transition: all 0.3s ease;
+}
+
+/* 검색 컨테이너 */
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 8px 10px;
+    width: 60%;
+    transition: all 0.3s ease;
+}
+
+/* 폼 내부 요소 정렬 */
+form {
+    display: flex; /* 가로로 정렬 */
+    align-items: center;
+    gap: 10px; /* 요소 간격 */
+    width: 100%;
+}
+
+/* 검색 필터 */
+.search-filter {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    border-radius: 20px;
+    font-family: 'Pretendard-Regular';
     font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    outline: none;
+    padding: 10px 40px 10px 15px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 6" fill="%23333"><path d="M0 0l5 6 5-6z"/></svg>');
+    background-repeat: no-repeat;
+    background-size: 12px;
+    background-position: right 15px center;
+}
+
+/* 검색 입력 래퍼 */
+.search-input-wrapper {
+    position: relative;
+    flex-grow: 1;
+    width: 100%;
+}
+
+/* 검색 아이콘 */
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 16px;
+    pointer-events: none;
 }
 
 .search-input {
-    flex: 1;
-    padding: 10px;
+    width: 100%;
+    padding: 10px 15px 10px 40px;
     font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px;
     outline: none;
+    border-radius: 20px;
+    color: #333;
+    transition: all 0.3s ease;
 }
 
 .search-input:focus {
-    border-color: #aaa;
+    background-color: #ffffff;
+    border: 1px solid #1a3e5c;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.search-button {
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
+/* 반응형 스타일 */
+@media screen and (max-width: 700px) {
+    .search-bar {
+        padding: 15px; /* 검색창 높이 줄이기 */
+        margin: 20px;
+    }
+
+    .search-container {
+        width: 100%; /* 검색 입력창을 화면 가득 채우기 */
+        background-color: #f4f6f9;
+        border: 1px solid #dddddd;
+        padding: 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-filter {
+        display: none; /* 검색 필터 숨기기 */
+    }
+
+    .search-input-wrapper {
+        width: 100%; /* 입력창만 남기기 */
+    }
+
+    .search-input {
+        padding: 10px 40px; /* 좁은 패딩 */
+        border-radius: 20px; /* 라운드 모양 조정 */
+        background-color: #ffffff;
+        font-size: 14px; /* 작은 글자 크기 */
+    }
+}
+
+@media screen and (min-width: 701px) {
+    .search-bar {
+        padding: 50px; /* 원래 크기로 복구 */
+    }
+
+    .search-container {
+        width: 60%;
+        padding: 8px 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-filter {
+        display: block; /* 필터 다시 표시 */
+    }
+
+    .search-input-wrapper {
+        flex-grow: 1;
+        width: auto; /* 원래 크기로 복구 */
+    }
+
+    .search-input {
+        padding: 10px 15px 10px 40px;
+        border-radius: 20px;
+        font-size: 16px; /* 원래 글자 크기 */
+    }
+}
+
+
+/* Section 스타일 */
+section {
+    max-width: 1200px; /* 최대 너비 */
+    margin: auto; /* 가운데 정렬 및 위아래 여백 */
+    padding: 20px 30px; /* 내부 여백 */
+    background-color: #fff; /* 흰색 배경 */
+}
+
+.carousel-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+}
+
+.main-carousel {
+    flex: 1; /* 화살표와 독립적으로 리스트 영역 확장 */
+    overflow: hidden;
+    position: relative;
+}
+
+.book-tab {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 50px;
+    margin-bottom: 20px;
+    list-style: none;
+    padding: 0;
+}
+
+.book-tab .title a {
+    font-size: 2rem;
+    font-family: "Pretendard-Bold";
+    margin-left: 60px;
+    color: #000;
+    text-decoration: none;
+}
+
+.book-tab .plus a {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-right: 60px;
+    color: #333333;
+    text-decoration: none;
+}
+
+.book-tab .plus a:hover {
+    text-decoration: underline;
+}
+
+.horizontal-list {
+    display: flex;
+    justify-content: center; /* 중앙 정렬 */
+    align-items: stretch; /* 책 높이를 동일하게 유지 */
+    gap: 20px; /* 책 간격 */
+    padding: 0;
+    list-style: none;
+    margin: 0 auto;
+    overflow: hidden;
+    max-width: 80%; /* 리스트가 화면 너비에 맞춰짐 */
+}
+
+/* 각 책 아이템 */
+.horizontal-list li {
+    flex: 1 1 calc(33.33% - 20px); /* 한 줄에 3권 */
+    max-width: 300px; /* 최대 너비 제한 */
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px;
+    transition: transform 0.3s ease;
+}
+
+.mainbook-image {
+    width: 100%; /* 가로폭을 채우기 */
+    aspect-ratio: 2 / 3; /* 1:2 비율 유지 */
+    object-fit: cover; /* 비율을 유지하면서 이미지 영역을 채움 */
+    max-height: 100%; /* 부모 높이 안에서 조정 */
+    margin-bottom: 10px; /* 이미지와 텍스트 간격 */
+}
+
+.mainbook-details {
+    width: 100%;
+    text-align: center;
+    overflow: hidden; /* 넘치는 텍스트 숨기기 */
+    text-overflow: ellipsis; /* 긴 텍스트에 ... 표시 */
+}
+
+.mainbook-details .book-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    margin: 10px 0 0;
+}
+
+/* 반응형: 모바일 화면 */
+@media screen and (max-width: 700px) {
+    .horizontal-list {
+        justify-content: center; /* 중앙 정렬 */
+        gap: 10px; /* 간격 축소 */
+    }
+
+    .horizontal-list li {
+        flex: 1 1 calc(50% - 10px); /* 한 줄에 2권 */
+        max-width: none; /* 최대 크기 제한 해제 */
+    }
+
+    .mainbook-image {
+        max-width: 150px; /* 이미지 크기 조정 */
+        height: auto; /* 비율 유지 */
+    }
+
+    .mainbook-details {
+        align-items: center;
+    }
+}
+
+/* 화살표 버튼 */
+.arrow {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid #ccc;
     cursor: pointer;
-    border-radius: 4px;
+    z-index: 10;
+    transition: all 0.3s ease;
 }
 
-.search-button:hover {
-    background-color: #45a049;
+/* 왼쪽 화살표 */
+.arrow.left {
+    left: 50px; /* 책 리스트 왼쪽 끝 안쪽으로 배치 */
+}
+
+/* 오른쪽 화살표 */
+.arrow.right {
+    right: 50px; /* 책 리스트 오른쪽 끝 안쪽으로 배치 */
+}
+
+/* 삼각형 모양 */
+.arrow::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-style: solid;
+    display: inline-block;
+}
+
+.arrow.left::before {
+    border-width: 8px 12px 8px 0; /* 삼각형 크기 */
+    border-color: transparent #333333 transparent transparent; /* 화살표 색상 */
+}
+
+.arrow.right::before {
+    border-width: 8px 0 8px 12px; /* 삼각형 크기 */
+    border-color: transparent transparent transparent #333333; /* 화살표 색상 */
+}
+
+/* 비활성화된 버튼 */
+.arrow:disabled {
+    border-color: rgba(0, 0, 0, 0.2); /* 테두리 반투명 */
+    cursor: not-allowed; /* 클릭 불가능 상태 */
+    opacity: 0.5; /* 반투명 효과 */
+}
+
+.arrow:disabled::before {
+    border-color: transparent rgba(0, 0, 0, 0.2) transparent transparent; /* 화살표도 반투명 */
+}
+
+.arrow.right:disabled::before {
+    border-color: transparent transparent transparent rgba(0, 0, 0, 0.2); /* 오른쪽 화살표 반투명 */
+}
+
+@media screen and (max-width: 700px) {
+    .horizontal-list li {
+        flex: 1 1 calc(50% - 10px);
+    }
+
+    .mainbook-image {
+        max-width: 150px;
+    }
+
+    .arrow {
+        display: none; /* 모바일에서 화살표 버튼 숨김 */
+    }
 }
