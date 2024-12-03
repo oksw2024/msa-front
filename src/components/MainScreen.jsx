@@ -14,49 +14,54 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
     const itemsPerPage = 3;
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [books, setBooks] = useState([]);
 
-    const handleRecommendedBooks = async () => {
-        setLoading(true);
-        setError(null);
+    // 중복 호출 방지 플래그
+    const hasFetched = useRef(false);
 
+    const fetchRecommendedBooks = async () => {
         try {
             const response = await axios.get('http://localhost:8080/api/recommend/popular', {
-                param: {
-                    pageNo: 0,
-                    pageSize: 20,
-                },
+                params: { pageNo: 0, pageSize: 20 },
             });
-
-            setRecommendedBooks(response.data.response.docs || []);
-            console.log("docs : ", recommendedBooks);
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
+            console.log("1docs : ", response.data.response.docs);
+            return response.data.response.docs || [];
+        } catch (err) {
+            throw new Error(err.message);
         }
     };
 
-    const handleNewBooks = async () => {
-        setLoading(true);
-        setError(null);
-
+    const fetchNewBooks = async () => {
         try {
             const response = await axios.get('http://localhost:8080/api/recommend/new');
-
-            setNewBooks(response.data.response.docs || []);
-            console.log("docs : ", newBooks);
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
+            console.log("2docs : ", response.data.response.docs);
+            return response.data.response.docs || [];
+        } catch (err) {
+            throw new Error(err.message);
         }
     };
 
     useEffect(() => {
-        handleRecommendedBooks();
-        handleNewBooks();
+        if (hasFetched.current) return; // 이미 데이터가 fetch된 경우 실행하지 않음
+
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [recommended, newBooksData] = await Promise.all([
+                    fetchRecommendedBooks(),
+                    fetchNewBooks(),
+                ]);
+                setRecommendedBooks(recommended);
+                setNewBooks(newBooksData);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+                hasFetched.current = true; // 데이터를 가져온 후 플래그 설정
+            }
+        };
+        fetchData();
     }, []);
+
 
     // 검색창에서 엔터를 눌렀을 때 BookSearchComponent로 이동
     const handleSearchSubmit = (e) => {
@@ -260,16 +265,16 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
                 {error && <p>Error: {error}</p>}
 
                 {paginatedBooks.length > 0 && (
-                    <div className="carousel-container">
+                    <div className="main-carousel-container">
                         {/* 화살표 버튼을 carousel-container 외부로 이동 */}
                         <button
-                            className="arrow left"
+                            className="main-arrow left"
                             onClick={handlePrev}
                             disabled={currentPage === 0}
                         ></button>
 
                         <div className="main-carousel">
-                            <ul className="horizontal-list">
+                            <ul className="main-horizontal-list">
                                 {paginatedBooks.map((book, index) => (
                                     <li key={index}>
                                         <img
@@ -294,7 +299,7 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
 
                         {/* 오른쪽 화살표 */}
                         <button
-                            className="arrow right"
+                            className="main-arrow right"
                             onClick={handleNext}
                             disabled={currentPage === Math.ceil(limitedBooks.length / itemsPerPage) - 1}
                         ></button>
@@ -331,16 +336,16 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
                 {error && <p>Error: {error}</p>}
 
                 {paginatedBooks2.length > 0 && (
-                    <div className="carousel-container">
+                    <div className="main-carousel-container">
                         {/* 왼쪽 화살표 */}
                         <button
-                            className="arrow left"
+                            className="main-arrow left"
                             onClick={handlePrev2}
                             disabled={currentPage2 === 0}
                         ></button>
 
                         <div className="main-carousel">
-                            <ul className='horizontal-list'>
+                            <ul className='main-horizontal-list'>
                                 {paginatedBooks2.map((book, index) => (
                                     <li key={index}>
                                         <img src={book.doc.bookImageURL}
@@ -363,7 +368,7 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
                         </div>
                         {/* 오른쪽 화살표 */}
                         <button
-                            className="arrow right"
+                            className="main-arrow right"
                             onClick={handleNext2}
                             disabled={currentPage2 === Math.ceil(limitedBooks.length / itemsPerPage) - 1}
                         ></button>

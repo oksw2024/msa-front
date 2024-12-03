@@ -1,4 +1,4 @@
-
+//AxiosInstance.js
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -16,6 +16,7 @@ apiClient.interceptors.request.use(
         if (accessToken) {
             config.headers.Authorization = `Bearer ${accessToken}`;
         }
+        //console.log('accessToken : ', accessToken);
         return config;
     },
     (error) => Promise.reject(error)
@@ -40,8 +41,12 @@ apiClient.interceptors.response.use(
                     headers: { REFRESH_TOKEN: refreshToken },
                 });
 
+                //console.log('refreshToken : ', refreshToken);
+
                 const newAccessToken = refreshResponse.data;
                 localStorage.setItem('accessToken', newAccessToken);
+
+                //console.log('New accessToken : ', newAccessToken);
 
                 originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 return apiClient(originalRequest);

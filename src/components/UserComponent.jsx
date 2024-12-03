@@ -1,9 +1,10 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {findUser, updateUser} from '../services/UserService';
 import {getFavorites, removeFavorite, getRecommendedBooks} from '../services/FavoriteService';
 import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import '../css/UserComponent.css'
+import {addBook, fetchBooks} from "../services/BooknoteService.js";
 
 export default function UserComponent() {
     const [userData, setUserData] = useState({});
@@ -57,22 +58,21 @@ export default function UserComponent() {
     }, [userData]);
 
 
-    // 입력 값 변경 처리
-    const handlePopupInputChange = (e) => {
-        const {name, value} = e.target;
-        setPopupFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
+    // 인풋 필드 값 구분
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    }
+        const { name, value } = e.target;
+        if (e.target.dataset.target === "bookInfo") {
+            setBookInfo((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        } else {
+            setFormData((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
+    };
 
     const handlePasswordInputChange = (e) => {
         const { name, value } = e.target;
@@ -166,11 +166,10 @@ export default function UserComponent() {
             // 유저 데이터 새로 불러오기
             await handleFindUser();
         } catch (error) {
-            // 실패 처리
-            if (error.response && error.response.data) {
-                setMessage(error.response.data.message); // 백엔드 메시지 표시
+            if (error.response) {
+                alert(error.response.data.message); // 오류 메시지 출력
             } else {
-                setMessage("비밀번호 변경 중 오류가 발생했습니다.");
+                alert("비밀번호 변경 중 오류가 발생했습니다.");
             }
         }
     };
@@ -179,67 +178,18 @@ export default function UserComponent() {
     ///독서노트////
 
     const handleAddBook = async () => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            setMessage('No access token found.');
-            return;
-        }
-
         //날짜 검증 추가
-        if (!validateDates()) {
-            return;
-        }
+        if (!validateDates()) return;
 
         try {
-            const response = await axios.post('http://localhost:8080/api/books/add', newBook, {
-                headers: {Authorization: `Bearer ${accessToken}`},
-            });
-            console.log("response : ", response);
-
-            setBooks([...books, response.data]);
-            setBookInfo({title: '', library: '', loanDate: '', returnDate: ''});
+            const newBook = await addBook(bookInfo);
+            setBooks([...books, newBook]);
+            setBookInfo({ title: '', library: '', loanDate: '', returnDate: '' });
             setMessage('Book added successfully.');
         } catch (error) {
-            console.error('Error response:', error.response);
-
-            if (error.response && error.response.status === 401) {
-                try {
-                    const refreshToken = localStorage.getItem('refreshToken');
-
-                    if (!refreshToken) {
-                        setMessage('Failed to find refresh token.');
-                        return;
-                    }
-
-                    const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
-                        headers: {REFRESH_TOKEN: refreshToken},
-                    });
-
-                    const newAccessToken = refreshResponse.data;
-                    localStorage.setItem('accessToken', newAccessToken);
-                    setMessage('Token refreshed successfully.');
-                    console.log('new accessToken:', newAccessToken);
-
-                    const retryResponse = await axios.post('http://localhost:8080/api/books/add', newBook, {
-                        headers: {Authorization: `Bearer ${newAccessToken}`},
-                    });
-
-                    console.log('retry response : ', retryResponse);
-
-                    setBooks([...books, retryResponse.data]);
-                    setBookInfo({title: '', library: '', loanDate: '', returnDate: ''});
-                    setMessage('Book added successfully after refreshing token.');
-                } catch (refreshError) {
-                    console.error('Failed to refresh token:', refreshError.response);
-
-                    if (refreshError.response?.status === 403) {
-                        setMessage('다시 로그인해주세요');
-                        localStorage.removeItem('accessToken');
-                        localStorage.removeItem('refreshToken');
-                        navigate('/login');
-                    }
-                }
-            } else if (error.response.status === 500) {
+            if (error.response?.status === 401) {
+                setMessage('Unauthorized. Please login again.');
+            } else if (error.response?.status === 500) {
                 setMessage('모든 값을 입력해주세요');
             } else {
                 setMessage('Failed to add book.');
@@ -247,23 +197,24 @@ export default function UserComponent() {
         }
     };
 
+
     // 날짜 검증 추가
     const validateDates = () => {
         const {loanDate, returnDate} = bookInfo;
         const today = new Date().toISOString().split('T')[0]; // 현재 날짜 (YYYY-MM-DD 형식)
 
         if (!loanDate || !returnDate) {
-            setMessage('대출 날짜와 반납 날짜를 입력하세요.');
+            alert('대출 날짜와 반납 날짜를 입력하세요.');
             return false;
         }
 
-        if (loanDate < today || returnDate < today) {
-            setMessage('대출 날짜와 반납 날짜는 오늘 이후여야 합니다.');
+        if (returnDate < today) {
+            alert('반납 날짜는 오늘 이후여야 합니다.');
             return false;
         }
 
         if (loanDate >= returnDate) {
-            setMessage('반납 날짜는 대출 날짜 이후여야 합니다.');
+            alert('반납 날짜는 대출 날짜 이후여야 합니다.');
             return false;
         }
 
@@ -271,54 +222,16 @@ export default function UserComponent() {
     };
 
     useEffect(() => {
-        const fetchBooks = async () => {
-            const accessToken = localStorage.getItem('accessToken');
+        const loadBooks = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/api/books/get', {
-                    headers: {Authorization: `Bearer ${accessToken}`},
-                });
-                console.log('Response data:', response.data);
-                setBooks(response.data);
+                const data = await fetchBooks();
+                setBooks(data);
             } catch (error) {
-                setMessage('Failed to add book.');
-                console.error('Error response:', error.response);
-
-                if (error.response && error.response.status === 401) {
-                    try {
-                        const refreshToken = localStorage.getItem('refreshToken');
-
-                        if (!refreshToken) {
-                            setMessage('Failed to find refresh token.');
-                            return;
-                        }
-
-                        const refreshResponse = await axios.get('http://localhost:8080/api/v1/auth/refresh', {
-                            headers: {REFRESH_TOKEN: refreshToken},
-                        });
-
-                        const newAccessToken = refreshResponse.data;
-                        localStorage.setItem('accessToken', newAccessToken);
-                        setMessage('Token refreshed successfully.');
-                        console.log('new accessToken:', newAccessToken);
-
-                        const retryResponse2 = await axios.get('http://localhost:8080/api/books/get', {
-                            headers: {Authorization: `Bearer ${newAccessToken}`},
-                        });
-
-                        console.log('retry response : ', retryResponse2);
-                        setBooks(retryResponse2.data);
-                    } catch (refreshError) {
-                        if (refreshError.response?.status === 403) {
-                            setMessage('다시 로그인해주세요');
-                            localStorage.removeItem('accessToken');
-                            localStorage.removeItem('refreshToken');
-                            navigate('/login');
-                        }
-                    }
-                }
+                setMessage('Failed to fetch books.');
             }
         };
-        fetchBooks();
+
+        loadBooks();
     }, []);
 
 
@@ -377,7 +290,7 @@ export default function UserComponent() {
         const fetchUserAndBooks = async () => {
             setIsLoading(true);
             try {
-                await Promise.all([handleFindUser(), fetchFavorites(), fetchRecommendations(), fetchBooks()]);
+                await Promise.all([handleFindUser(), fetchFavorites()]);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -442,26 +355,9 @@ export default function UserComponent() {
         console.log("userData:", userData);
     }, [formData, userData]);
 
-    const handleButtonClick = (field, action) => {
-        if (action === "edit") {
-            handleEditField(field);
-        } else if (action === "cancel") {
-            handleCancelEdit(field);
-        }
-    };
 
     return (
         <div className="main-container">
-            {/* 좌측 네비게이션 바 */}
-            <nav className="sidebar">
-                <ul className="nav-list">
-                    <li><a href="/">홈</a></li>
-                    <li><a href="/profile">프로필</a></li>
-                    <li><a href="/books">내 도서</a></li>
-                    <li><a href="/settings">설정</a></li>
-                    <li><a href="/logout">로그아웃</a></li>
-                </ul>
-            </nav>
 
             <div className="content-container">
                 {/* 상단 배너 */}
@@ -474,7 +370,7 @@ export default function UserComponent() {
                                 안녕하세요, <strong>{userData.username}</strong>님!
                             </h1>
                             <div className="my-info">
-                                {/* 이메일 정보 */}
+                            {/* 이메일 정보 */}
                                 <div className="email-info">
                                     <i className="fas fa-envelope"></i>
                                     <p>{userData.email}</p>
@@ -493,24 +389,34 @@ export default function UserComponent() {
 
 
                 {/*임시 사용자 정보 수정 섹션*/}
-                <div className="user-component">
-                    <h1>사용자 정보</h1>
-                    <div className="user-details">
-                        <p>
-                            <strong>이름:</strong> {userData.username || "N/A"}
-                        </p>
-                        <p>
-                            <strong>이메일:</strong> {userData.email || "N/A"}
-                        </p>
-                        <button onClick={handleOpenModal}>사용자 정보 수정</button>
-                        <button onClick={handleOpenPasswordModal}>비밀번호 변경</button>
-                    </div>
+                <div className="mysection-container">
+                    <h2>사용자 정보</h2>
+                    {!isModalOpen && !isPasswordModalOpen && (
+                        <div className="user-details">
+                            <div className="user-details-row">
+                                <div className="user-details-label">이름</div>
+                                <div className="user-details-value">{userData.username || "N/A"}</div>
+                            </div>
+                            <div className="user-details-row">
+                                <div className="user-details-label">아이디</div>
+                                <div className="user-details-value">{userData.loginId || "N/A"}</div>
+                            </div>
+                            <div className="user-details-row">
+                                <div className="user-details-label">이메일</div>
+                                <div className="user-details-value">{userData.email || "N/A"}</div>
+                            </div>
+                            <div className="user-details-buttons">
+                                <button onClick={handleOpenModal}>사용자 정보 수정</button>
+                                <button onClick={handleOpenPasswordModal}>비밀번호 변경</button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* 사용자 정보 수정 팝업 */}
                     {isModalOpen && (
                         <div className="modal">
                             <div className="modal-content">
-                                <h2>사용자 정보 수정</h2>
+                                <h3>사용자 정보 수정</h3>
                                 <label>
                                     <strong>이름:</strong>
                                     <input
@@ -541,7 +447,7 @@ export default function UserComponent() {
                     {isPasswordModalOpen && (
                         <div className="modal">
                             <div className="modal-content">
-                                <h2>비밀번호 변경</h2>
+                                <h3>비밀번호 변경</h3>
                                 <label>
                                     <strong>현재 비밀번호:</strong>
                                     <input
@@ -573,7 +479,7 @@ export default function UserComponent() {
                 </div>
 
                 {/* 도서 리스트 섹션 */}
-                <section className="books-section">
+                <section className="mysection-container">
                     <h2>도서 대출 내역</h2>
 
                     {/* 도서 추가 섹션 */}
@@ -625,7 +531,7 @@ export default function UserComponent() {
                 </section>
 
                 {/* 즐겨찾기 섹션 */}
-                <section className="favorites-section">
+                <section className="mysection-container">
                     <h2>즐겨찾기 목록</h2>
                     <ul className="favorites-list">
                         {favorites.length > 0 ? (
@@ -663,13 +569,14 @@ export default function UserComponent() {
                 </section>
 
                 {/* 추천 도서 섹션*/}
-                <section className="recommendations-section">
+                <section className="mysection-container">
                     <h2>추천 도서</h2>
+
                     {recommendedBooks.length > 0 ? (
-                        <div className="carousel-container">
+                        <div className="my-carousel-container">
                             {/* 왼쪽 화살표 */}
                             <button
-                                className="arrow left"
+                                className="main-arrow left"
                                 onClick={() =>
                                     setCurrentPage((prevPage) => Math.max(prevPage - 1, 0))
                                 }
@@ -677,8 +584,8 @@ export default function UserComponent() {
                             >
                             </button>
 
-                            <div className="carousel">
-                                <ul className="horizontal-list">
+                            <div className="main-carousel">
+                                <ul className='main-horizontal-list'>
                                     {recommendedBooks
                                         .slice(
                                             currentPage * itemsPerPage,
@@ -699,19 +606,25 @@ export default function UserComponent() {
                                                     >
                                                         {truncateText(book.bookname, 18)}
                                                     </h4>
-                                                    <p>
-                                                        <strong>저자:</strong>{" "}
-                                                        {book.authors || "알 수 없음"}
-                                                    </p>
                                                 </div>
                                             </li>
                                         ))}
+                                    {/* 빈 요소 추가 */}
+                                    {Array.from({
+                                        length: itemsPerPage -
+                                            recommendedBooks.slice(
+                                                currentPage * itemsPerPage,
+                                                (currentPage + 1) * itemsPerPage
+                                            ).length,
+                                    }).map((_, index) => (
+                                        <li key={`empty-${index}`} className="recommendation-card empty"></li>
+                                    ))}
                                 </ul>
                             </div>
 
                             {/* 오른쪽 화살표 */}
                             <button
-                                className="arrow right"
+                                className="main-arrow right"
                                 onClick={() =>
                                     setCurrentPage((prevPage) =>
                                         Math.min(

@@ -275,7 +275,7 @@ section {
     background-color: #fff; /* 흰색 배경 */
 }
 
-.carousel-container {
+.main-carousel-container {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -319,7 +319,7 @@ section {
     text-decoration: underline;
 }
 
-.horizontal-list {
+.main-horizontal-list {
     display: flex;
     justify-content: center; /* 중앙 정렬 */
     align-items: stretch; /* 책 높이를 동일하게 유지 */
@@ -332,7 +332,7 @@ section {
 }
 
 /* 각 책 아이템 */
-.horizontal-list li {
+.main-horizontal-list li {
     flex: 1 1 calc(33.33% - 20px); /* 한 줄에 3권 */
     max-width: 300px; /* 최대 너비 제한 */
     text-align: center;
@@ -368,12 +368,12 @@ section {
 
 /* 반응형: 모바일 화면 */
 @media screen and (max-width: 700px) {
-    .horizontal-list {
+    .main-horizontal-list {
         justify-content: center; /* 중앙 정렬 */
         gap: 10px; /* 간격 축소 */
     }
 
-    .horizontal-list li {
+    .main-horizontal-list li {
         flex: 1 1 calc(50% - 10px); /* 한 줄에 2권 */
         max-width: none; /* 최대 크기 제한 해제 */
     }
@@ -389,7 +389,7 @@ section {
 }
 
 /* 화살표 버튼 */
-.arrow {
+.main-arrow {
     position: relative;
     width: 50px;
     height: 50px;
@@ -405,17 +405,17 @@ section {
 }
 
 /* 왼쪽 화살표 */
-.arrow.left {
+.main-arrow.left {
     left: 50px; /* 책 리스트 왼쪽 끝 안쪽으로 배치 */
 }
 
 /* 오른쪽 화살표 */
-.arrow.right {
+.main-arrow.right {
     right: 50px; /* 책 리스트 오른쪽 끝 안쪽으로 배치 */
 }
 
 /* 삼각형 모양 */
-.arrow::before {
+.main-arrow::before {
     content: '';
     width: 0;
     height: 0;
@@ -423,33 +423,33 @@ section {
     display: inline-block;
 }
 
-.arrow.left::before {
+.main-arrow.left::before {
     border-width: 8px 12px 8px 0; /* 삼각형 크기 */
     border-color: transparent #333333 transparent transparent; /* 화살표 색상 */
 }
 
-.arrow.right::before {
+.main-arrow.right::before {
     border-width: 8px 0 8px 12px; /* 삼각형 크기 */
     border-color: transparent transparent transparent #333333; /* 화살표 색상 */
 }
 
 /* 비활성화된 버튼 */
-.arrow:disabled {
+.main-arrow:disabled {
     border-color: rgba(0, 0, 0, 0.2); /* 테두리 반투명 */
     cursor: not-allowed; /* 클릭 불가능 상태 */
     opacity: 0.5; /* 반투명 효과 */
 }
 
-.arrow:disabled::before {
+.main-arrow:disabled::before {
     border-color: transparent rgba(0, 0, 0, 0.2) transparent transparent; /* 화살표도 반투명 */
 }
 
-.arrow.right:disabled::before {
+.main-arrow.right:disabled::before {
     border-color: transparent transparent transparent rgba(0, 0, 0, 0.2); /* 오른쪽 화살표 반투명 */
 }
 
 @media screen and (max-width: 700px) {
-    .horizontal-list li {
+    .main-horizontal-list li {
         flex: 1 1 calc(50% - 10px);
     }
 

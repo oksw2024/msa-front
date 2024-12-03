@@ -5,11 +5,11 @@ import UserComponent from './components/UserComponent';
 import LoginComponent from './components/LoginComponent';
 import SignupComponent from './components/SignupComponent';
 import BookSearchComponent from './components/BookSearchComponent';
-import './App.css';
 import PlusBookComponent from './components/PlusBookComponent';
 import BookDetailComponent from './components/BookDetailComponent';
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import './App.css';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
