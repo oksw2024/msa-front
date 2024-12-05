@@ -3,8 +3,8 @@ import {findUser, updateUser} from '../services/UserService';
 import {getFavorites, removeFavorite, getRecommendedBooks} from '../services/FavoriteService';
 import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
-import '../css/UserComponent.css'
-import {addBook, fetchBooks} from "../services/BooknoteService.js";
+//import '../css/UserComponent.css'
+import {addBook, fetchBooks, deleteBook} from "../services/BooknoteService.js";
 
 export default function UserComponent() {
     const [userData, setUserData] = useState({});
@@ -195,6 +195,22 @@ export default function UserComponent() {
                 setMessage('Failed to add book.');
             }
         }
+    };
+
+    const handleDeleteBook = async (bookId) => {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+          setMessage('No access token found.');
+          return;
+      }
+  
+      try {
+        await deleteBook(bookId);
+        const data = await fetchBooks();
+        setBooks(data);
+      } catch (error) {
+          setMessage('Failed to delete book.');
+      }
     };
 
 
@@ -683,4 +699,3 @@ export default function UserComponent() {
         </div>
     );
 }
-
