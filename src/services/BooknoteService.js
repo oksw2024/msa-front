@@ -19,3 +19,15 @@ export const addBook = async (newBook) => {
         throw error;
     }
 };
+
+export const deleteBook = async (bookId) => {
+    try {
+      console.log('bookId:', bookId);
+      await apiClient.delete('/books/delete', {
+        data: { id: bookId },
+      });
+    } catch (error) {
+      console.error('Error removing booknote:', error);
+      throw error;
+    }
+};
