@@ -8,7 +8,7 @@ import {addBook, fetchBooks} from "../services/BooknoteService.js";
 
 export default function UserComponent() {
     const [userData, setUserData] = useState({});
-    const [formData, setFormData] = useState({ username: "", email: "" }); // 초기화
+    const [formData, setFormData] = useState({username: "", email: ""}); // 초기화
     const [passwordData, setPasswordData] = useState({
         currentPassword: "",
         newPassword: "",
@@ -40,7 +40,7 @@ export default function UserComponent() {
         try {
             const user = await findUser(localStorage.getItem("accessToken"));
             setUserData(user || {});
-            setFormData({ username: user?.username || "", email: user?.email || "" });
+            setFormData({username: user?.username || "", email: user?.email || ""});
         } catch (error) {
             setMessage("사용자 데이터를 불러오지 못했습니다.");
         } finally {
@@ -54,13 +54,13 @@ export default function UserComponent() {
 
     useEffect(() => {
         // userData 변경 시 formData 동기화
-        setFormData({ username: userData.username || "", email: userData.email || "" });
+        setFormData({username: userData.username || "", email: userData.email || ""});
     }, [userData]);
 
 
     // 인풋 필드 값 구분
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         if (e.target.dataset.target === "bookInfo") {
             setBookInfo((prev) => ({
                 ...prev,
@@ -75,7 +75,7 @@ export default function UserComponent() {
     };
 
     const handlePasswordInputChange = (e) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setPasswordData((prev) => ({
             ...prev,
             [name]: value,
@@ -83,12 +83,12 @@ export default function UserComponent() {
     };
 
     const handleOpenModal = () => {
-        setFormData({ username: userData.username || "", email: userData.email || "" });
+        setFormData({username: userData.username || "", email: userData.email || ""});
         setIsModalOpen(true);
     };
 
     const handleOpenPasswordModal = () => {
-        setPasswordData({ currentPassword: "", newPassword: "" });
+        setPasswordData({currentPassword: "", newPassword: ""});
         setIsPasswordModalOpen(true);
     };
 
@@ -109,7 +109,7 @@ export default function UserComponent() {
 
         setIsLoading(true); // 로딩 시작
         try {
-            await updateUser({ ...userData, ...formData }); // 사용자 데이터 업데이트
+            await updateUser({...userData, ...formData}); // 사용자 데이터 업데이트
             await handleFindUser(); // 데이터 새로 불러오기
             setIsModalOpen(false); // 모달 닫기
             setMessage("사용자 정보가 업데이트되었습니다.");
@@ -154,7 +154,7 @@ export default function UserComponent() {
                     newPassword: passwordData.newPassword,
                 },
                 {
-                    headers: { Authorization: `Bearer ${accessToken}` },
+                    headers: {Authorization: `Bearer ${accessToken}`},
                 }
             );
             setMessage("비밀번호가 성공적으로 변경되었습니다.");
@@ -184,7 +184,7 @@ export default function UserComponent() {
         try {
             const newBook = await addBook(bookInfo);
             setBooks([...books, newBook]);
-            setBookInfo({ title: '', library: '', loanDate: '', returnDate: '' });
+            setBookInfo({title: '', library: '', loanDate: '', returnDate: ''});
             setMessage('Book added successfully.');
         } catch (error) {
             if (error.response?.status === 401) {
@@ -361,7 +361,7 @@ export default function UserComponent() {
 
             <div className="content-container">
                 {/* 상단 배너 */}
-                <div className="my-banner">
+                <section className="my-banner">
                     {isLoading ? (
                         <p>로딩 중...</p>
                     ) : userData.username ? (
@@ -370,7 +370,7 @@ export default function UserComponent() {
                                 안녕하세요, <strong>{userData.username}</strong>님!
                             </h1>
                             <div className="my-info">
-                            {/* 이메일 정보 */}
+                                {/* 이메일 정보 */}
                                 <div className="email-info">
                                     <i className="fas fa-envelope"></i>
                                     <p>{userData.email}</p>
@@ -385,11 +385,11 @@ export default function UserComponent() {
                     ) : (
                         <p>사용자 정보를 불러오는 중...</p>
                     )}
-                </div>
+                </section>
 
 
                 {/*임시 사용자 정보 수정 섹션*/}
-                <div className="mysection-container">
+                <section className="mysection-container">
                     <h2>사용자 정보</h2>
                     {!isModalOpen && !isPasswordModalOpen && (
                         <div className="user-details">
@@ -416,59 +416,89 @@ export default function UserComponent() {
                     {isModalOpen && (
                         <div className="modal">
                             <div className="modal-content">
-                                <h3>사용자 정보 수정</h3>
-                                <label>
-                                    <strong>이름:</strong>
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>이름</strong>
+                                    </label>
                                     <input
                                         type="text"
                                         name="username"
                                         value={formData.username}
                                         onChange={handleInputChange}
+                                        className="form-input"
                                     />
-                                </label>
-                                <label>
-                                    <strong>이메일:</strong>
+                                </div>
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>이메일</strong>
+                                    </label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
+                                        className="form-input"
                                     />
-                                </label>
+                                </div>
                                 <div className="modal-buttons">
                                     <button onClick={handleUpdateUser}>확인</button>
                                     <button onClick={handleCloseModal}>취소</button>
                                 </div>
                             </div>
                         </div>
+
                     )}
 
                     {/* 비밀번호 변경 팝업 */}
                     {isPasswordModalOpen && (
                         <div className="modal">
                             <div className="modal-content">
-                                <h3>비밀번호 변경</h3>
-                                <label>
-                                    <strong>현재 비밀번호:</strong>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="currentPassword"
-                                        value={passwordData.currentPassword}
-                                        onChange={handlePasswordInputChange}
-                                    />
-                                </label>
-                                <label>
-                                    <strong>새 비밀번호:</strong>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="newPassword"
-                                        value={passwordData.newPassword}
-                                        onChange={handlePasswordInputChange}
-                                    />
-                                </label>
-                                <button onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? "숨기기" : "표시"}
-                                </button>
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>현재 비밀번호</strong>
+                                    </label>
+                                    <div className="input-wrapper">
+                                        <input
+                                            type={showPassword.current ? "text" : "password"}
+                                            className="form-input"
+                                            name="currentPassword"
+                                            value={passwordData.currentPassword}
+                                            onChange={handlePasswordInputChange}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="toggle-password"
+                                            onClick={() =>
+                                                setShowPassword((prev) => ({...prev, current: !prev.current}))
+                                            }
+                                        >
+                                            {showPassword.current ? "숨기기" : "표시"}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>새 비밀번호</strong>
+                                    </label>
+                                    <div className="input-wrapper">
+                                        <input
+                                            type={showPassword.new ? "text" : "password"}
+                                            className="form-input"
+                                            name="newPassword"
+                                            value={passwordData.newPassword}
+                                            onChange={handlePasswordInputChange}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="toggle-password"
+                                            onClick={() =>
+                                                setShowPassword((prev) => ({...prev, new: !prev.new}))
+                                            }
+                                        >
+                                            {showPassword.new ? "숨기기" : "표시"}
+                                        </button>
+                                    </div>
+                                </div>
                                 <div className="modal-buttons">
                                     <button onClick={handleUpdatePassword}>확인</button>
                                     <button onClick={handleClosePasswordModal}>취소</button>
@@ -476,7 +506,7 @@ export default function UserComponent() {
                             </div>
                         </div>
                     )}
-                </div>
+                </section>
 
                 {/* 도서 리스트 섹션 */}
                 <section className="mysection-container">

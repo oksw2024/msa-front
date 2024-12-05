@@ -18,7 +18,7 @@ body {
 /* 메인 콘텐츠 스타일 */
 .content-container {
     flex: 1; /* 남은 공간을 차지 */
-    padding: 20px;
+    padding: 20px 70px;
     overflow-y: auto; /* 세로 스크롤 허용 */
     background-color: #f9f9f9;
 }
@@ -33,6 +33,7 @@ body {
     margin-bottom: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 약간의 그림자 효과 추가 */
+    min-width: 600px;
 }
 
 .my-banner h1 {
@@ -109,8 +110,8 @@ body {
     border-bottom: 1px solid #f0f0f0; /* 구분선 추가 */
 }
 
-.user-details-row:last-child {
-    border-bottom: none; /* 마지막 행에는 구분선 제거 */
+.user-details-row:nth-child(3) { /* 마지막 행에는 구분선 제거..가 안먹혀서 3번째로 설정 */
+    border-bottom: none;
 }
 
 .user-details-label {
@@ -155,47 +156,54 @@ body {
 
 /* 사용자 정보 수정 모달 */
 .modal-content {
-    padding: 30px;
+    padding: 20px;
     background-color: #fff;
     text-align: center;
 }
 
 .modal-content h3 {
+    margin-bottom: 35px;
 }
 
-.modal-content label {
-    display: block;
-    text-align: left;
-    margin-bottom: 10px;
-    font-size: 1rem;
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 5px 0;
+}
+
+.form-label {
+    flex: 1; /* 라벨의 너비를 조정 */
     font-weight: bold;
-    color: #555;
+    font-size: 16px;
+    color: #333;
+    text-align: left;
 }
 
-.modal-content input {
-    width: 100%;
+.form-input {
+    flex: 2; /* 입력 필드가 더 넓게 보이도록 설정 */
     padding: 10px;
+    font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 1rem;
-    margin-bottom: 20px;
     box-sizing: border-box;
 }
 
 .modal-buttons {
-    width: 200px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    gap: 10px; /* 버튼 간격 */
+    margin-top: 20px;
 }
 
 .modal-buttons button {
-    width: 48%;
     padding: 10px 20px;
+    font-size: 1rem;
     border: none;
     border-radius: 4px;
-    font-size: 1rem;
     cursor: pointer;
-    font-weight: bold;
+    transition: background-color 0.3s ease;
 }
 
 .modal-buttons button:first-child {
@@ -218,7 +226,6 @@ body {
 
 
 
-
 /* 리스트 섹션 공통 */
 .mysection-container {
     background-color: white;
@@ -227,6 +234,7 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border: 1px solid #ddd;
     margin-top: 20px;
+    min-width: 600px;
 }
 
 .mysection-container h2 {
@@ -318,18 +326,6 @@ body {
     pointer-events: none; /* 사용자 상호작용 차단 */
 }
 
-.arrow {
-    cursor: pointer;
-    border: none;
-    background-color: transparent;
-    font-size: 2rem;
-    color: #333;
-    transition: color 0.3s;
-}
 
-.arrow:disabled {
-    color: #ccc;
-    cursor: not-allowed;
-}
 
 

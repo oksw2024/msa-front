@@ -368,9 +368,12 @@ section {
 
 /* 반응형: 모바일 화면 */
 @media screen and (max-width: 700px) {
+    .main-carousel {
+    }
+
     .main-horizontal-list {
         justify-content: center; /* 중앙 정렬 */
-        gap: 10px; /* 간격 축소 */
+        gap: 2px; /* 간격 축소 */
     }
 
     .main-horizontal-list li {
@@ -448,7 +451,7 @@ section {
     border-color: transparent transparent transparent rgba(0, 0, 0, 0.2); /* 오른쪽 화살표 반투명 */
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 850px) {
     .main-horizontal-list li {
         flex: 1 1 calc(50% - 10px);
     }
@@ -457,7 +460,12 @@ section {
         max-width: 150px;
     }
 
-    .arrow {
-        display: none; /* 모바일에서 화살표 버튼 숨김 */
+    .main-arrow.left {
+        left: 20px; /* 책 리스트 왼쪽 끝 안쪽으로 배치 */
+    }
+
+    /* 오른쪽 화살표 */
+    .main-arrow.right {
+        right: 20px; /* 책 리스트 오른쪽 끝 안쪽으로 배치 */
     }
 }
