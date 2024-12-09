@@ -6,7 +6,6 @@ import "../css/LoginComponent.css";
 function LoginComponent({ onLogin }) {
     const [loginId, setLoginId] = useState('');
     const [password, setPassword] = useState('');
-    const [message, setMessage] = useState('');
     const [idMessage, setIdMessage] = useState('');
     const [passwordMessage, setPasswordMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -23,7 +22,6 @@ function LoginComponent({ onLogin }) {
     const handleLogin = async () => {
         setIdMessage('');
         setPasswordMessage('');
-        setMessage('');
 
         if (!loginId.trim()) {
             setIdMessage("아이디를 입력해주세요.");
@@ -38,10 +36,9 @@ function LoginComponent({ onLogin }) {
             localStorage.setItem('accessToken', response.accessToken);
             localStorage.setItem('refreshToken', response.refreshToken);
             onLogin();
-            alert('로그인 성공!');
-            navigate('/'); // 로그인 후 메인 페이지로 이동
+            navigate(-1); // 뒤로가기 기능
         } catch (error) {
-            setMessage('아이디 혹은 비밀번호가 틀렸습니다.');
+            setPasswordMessage('아이디 혹은 비밀번호가 틀렸습니다.');
         }
     };
 

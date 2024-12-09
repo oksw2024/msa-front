@@ -1,12 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {findUser, updateUser} from '../services/UserService';
-import {getFavorites, removeFavorite, getRecommendedBooks} from '../services/FavoriteService';
+import React, {useEffect, useRef, useState} from 'react';
+import {deleteUser, findUser, updateUser} from '../services/UserService';
+import {getFavorites, removeFavorite, getRecommendedBooks, removeAllFavorites} from '../services/FavoriteService';
 import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
-//import '../css/UserComponent.css'
+import '../css/UserComponent.css'
 import {addBook, fetchBooks, deleteBook} from "../services/BooknoteService.js";
 
-export default function UserComponent() {
+export default function UserComponent({handleLogout}) {
     const [userData, setUserData] = useState({});
     const [formData, setFormData] = useState({username: "", email: ""}); // 초기화
     const [passwordData, setPasswordData] = useState({
@@ -16,7 +16,7 @@ export default function UserComponent() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [message, setMessage] = useState('');
+
     const [isLoading, setIsLoading] = useState(true);
     const [books, setBooks] = useState([]);
     const [bookInfo, setBookInfo] = useState({
@@ -25,32 +25,83 @@ export default function UserComponent() {
         loanDate: '',
         returnDate: '',
     });
+    const [isBookPopupOpen, setIsBookPopupOpen] = useState(false);
+    const [bookPopupData, setBookPopupData] = useState(null);
+
     const [favorites, setFavorites] = useState([]);
     const [recommendedBooks, setRecommendedBooks] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const itemsPerPage = 3;
     const navigate = useNavigate();
 
+    const [message, setMessage] = useState('');
+
+    useEffect(() => {
+        handleFindUser();
+    }, []);
 
     const handleBack = () => {
         navigate('/');
     };
 
-    const handleFindUser = async () => {
+    const handleDeleteUser = async () => {
         try {
-            const user = await findUser(localStorage.getItem("accessToken"));
-            setUserData(user || {});
-            setFormData({username: user?.username || "", email: user?.email || ""});
+            // 1. 모든 즐겨찾기 삭제
+            await removeAllFavorites();
+            console.log('All favorites removed.');
+
+            // 2. 유저 삭제
+            await deleteUser();
+            console.log('User deleted.');
+
+            // 3. 클라이언트 로그아웃
+            alert('회원탈퇴 성공!');
+            localStorage.clear();
+            handleLogout();
+            navigate('/');
         } catch (error) {
-            setMessage("사용자 데이터를 불러오지 못했습니다.");
-        } finally {
-            setIsLoading(false); // 로딩 상태 해제
+            console.error('Error deleting user or favorites:', error);
+            alert('Failed to delete user or favorites.');
         }
     };
 
-    useEffect(() => {
-        handleFindUser();
-    }, []);
+    const handleFindUser = async () => {
+        let retryCount = 0; // 재시도 횟수
+        const maxRetries = 1; // 최대 재시도 횟수
+
+        const fetchUserWithRetry = async () => {
+            try {
+                const user = await findUser(); // 사용자 데이터 요청
+                if (user) {
+                    setUserData(user); // 사용자 데이터 설정
+                    setFormData({
+                        username: user.username || "",
+                        email: user.email || "",
+                    });
+                } else if (retryCount < maxRetries) {
+                    retryCount += 1;
+                    console.warn(`Retrying fetch user data... Attempt: ${retryCount}`);
+                    setTimeout(fetchUserWithRetry, 1000); // 1초 지연 후 재시도
+                } else {
+                    console.error("Failed to fetch user data after 3 attempts.");
+                    setMessage("사용자 데이터를 불러오지 못했습니다.");
+                }
+            } catch (error) {
+                if (retryCount < maxRetries) {
+                    retryCount += 1;
+                    console.warn(`Retrying due to error... Attempt: ${retryCount}`);
+                    setTimeout(fetchUserWithRetry, 1000); // 1초 지연 후 재시도
+                } else {
+                    console.error("Error fetching user data after 3 attempts:", error);
+                    setMessage("사용자 데이터를 불러오는 중 오류가 발생했습니다.");
+                }
+            } finally {
+                setIsLoading(false); // 로딩 상태 해제
+            }
+        };
+
+        fetchUserWithRetry(); // 재시도 함수 호출
+    };
 
     useEffect(() => {
         // userData 변경 시 formData 동기화
@@ -181,10 +232,18 @@ export default function UserComponent() {
         //날짜 검증 추가
         if (!validateDates()) return;
 
+        setBookPopupData({...bookInfo});
+        setIsBookPopupOpen(true);
+    };
+
+
+    const handleSaveBook = async () => {
         try {
-            const newBook = await addBook(bookInfo);
+            const newBook = await addBook(bookPopupData);
             setBooks([...books, newBook]);
             setBookInfo({title: '', library: '', loanDate: '', returnDate: ''});
+            setIsBookPopupOpen(false);
+
             setMessage('Book added successfully.');
         } catch (error) {
             if (error.response?.status === 401) {
@@ -197,20 +256,19 @@ export default function UserComponent() {
         }
     };
 
+    const handleCloseBookPopup = () => {
+        setIsBookPopupOpen(false);
+    };
+
+
     const handleDeleteBook = async (bookId) => {
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-          setMessage('No access token found.');
-          return;
-      }
-  
-      try {
-        await deleteBook(bookId);
-        const data = await fetchBooks();
-        setBooks(data);
-      } catch (error) {
-          setMessage('Failed to delete book.');
-      }
+        try {
+            await deleteBook(bookId);
+            const data = await fetchBooks();
+            setBooks(data);
+        } catch (error) {
+            setMessage('Failed to delete book.');
+        }
     };
 
 
@@ -289,13 +347,8 @@ export default function UserComponent() {
 
     // 즐겨찾기 제거
     const handleRemoveFavorite = async (isbn13) => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            setMessage('No access token found.');
-            return;
-        }
         try {
-            await removeFavorite(accessToken, isbn13);
+            await removeFavorite(isbn13);
             setFavorites(favorites.filter((fav) => fav.isbn13 !== isbn13));
             setMessage('Favorite removed successfully.');
         } catch (error) {
@@ -335,7 +388,12 @@ export default function UserComponent() {
                 if (recommendations.length === 0) {
                     setMessage('즐겨찾기 도서를 추가해 주십시오.');
                 } else {
-                    setRecommendedBooks(recommendations);
+                    // 중복 제거 로직
+                    const uniqueRecommendations = recommendations.filter((book, index, self) =>
+                        index === self.findIndex(b => b.bookname === book.bookname)
+                    );
+
+                    setRecommendedBooks(uniqueRecommendations);
                 }
             } catch (error) {
                 console.error("Failed to fetch recommendations:", error);
@@ -358,26 +416,61 @@ export default function UserComponent() {
         navigate(`/book/details`, {state: {bookDetails}});
     };
 
+
+
+    ///네비 바/////////////////
+    const sectionsRef = useRef([]);
+
+    const handleScroll = (e, targetId) => {
+        e.preventDefault();
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+            targetElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+        }
+    };
+
+    const handleActiveLink = (id) => {
+        const links = document.querySelectorAll(".my-navbar-item");
+        links.forEach((link) => link.classList.remove("active"));
+        const activeLink = Array.from(links).find((link) =>
+            link.querySelector(`a[href="#${id}"]`)
+        );
+        if (activeLink) {
+            activeLink.classList.add("active");
+        }
+    };
+
     useEffect(() => {
-        const fetchUserData = async () => {
-            await handleFindUser(); // 사용자 데이터 가져오기
-            setFormData(userData); // formData 초기화
+        const handleScrollObserver = () => {
+            const middleOfViewport = window.innerHeight / 2;
+
+            sectionsRef.current.forEach((section) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= middleOfViewport && rect.bottom >= middleOfViewport) {
+                    handleActiveLink(section.id);
+                }
+            });
         };
-        fetchUserData();
+
+        // 섹션의 레퍼런스를 저장
+        sectionsRef.current = Array.from(document.querySelectorAll(".my-section"));
+
+        window.addEventListener("scroll", handleScrollObserver);
+
+        return () => {
+            window.removeEventListener("scroll", handleScrollObserver);
+        };
     }, []);
-
-    useEffect(() => {
-        console.log("formData:", formData);
-        console.log("userData:", userData);
-    }, [formData, userData]);
-
 
     return (
         <div className="main-container">
 
             <div className="content-container">
                 {/* 상단 배너 */}
-                <section className="my-banner">
+                <section id="section1" data-section="section1" className="my-banner">
                     {isLoading ? (
                         <p>로딩 중...</p>
                     ) : userData.username ? (
@@ -405,7 +498,7 @@ export default function UserComponent() {
 
 
                 {/*임시 사용자 정보 수정 섹션*/}
-                <section className="mysection-container">
+                <section id="section1" data-section="section1" className="mysection-container">
                     <h2>사용자 정보</h2>
                     {!isModalOpen && !isPasswordModalOpen && (
                         <div className="user-details">
@@ -483,12 +576,13 @@ export default function UserComponent() {
                                         />
                                         <button
                                             type="button"
-                                            className="toggle-password"
+                                            className="mypassword-toggle"
                                             onClick={() =>
                                                 setShowPassword((prev) => ({...prev, current: !prev.current}))
                                             }
                                         >
-                                            {showPassword.current ? "숨기기" : "표시"}
+                                            {showPassword.current ? <i className="fas fa-eye-slash"></i> :
+                                                <i className="fas fa-eye"></i>}
                                         </button>
                                     </div>
                                 </div>
@@ -506,12 +600,13 @@ export default function UserComponent() {
                                         />
                                         <button
                                             type="button"
-                                            className="toggle-password"
+                                            className="mypassword-toggle"
                                             onClick={() =>
                                                 setShowPassword((prev) => ({...prev, new: !prev.new}))
                                             }
                                         >
-                                            {showPassword.new ? "숨기기" : "표시"}
+                                            {showPassword.new ? <i className="fas fa-eye-slash"></i> :
+                                                <i className="fas fa-eye"></i>}
                                         </button>
                                     </div>
                                 </div>
@@ -525,43 +620,96 @@ export default function UserComponent() {
                 </section>
 
                 {/* 도서 리스트 섹션 */}
-                <section className="mysection-container">
+                <section id="section2" data-section="section2" className="mysection-container">
                     <h2>도서 대출 내역</h2>
 
                     {/* 도서 추가 섹션 */}
-                    <div className="add-book-form">
-                        <input
-                            type="text"
-                            name="title"
-                            data-target="bookInfo"
-                            placeholder="도서명"
-                            value={bookInfo.title}
-                            onChange={handleInputChange}
-                        />
-                        <input
-                            type="text"
-                            name="library"
-                            data-target="bookInfo"
-                            placeholder="대출 도서관"
-                            value={bookInfo.library}
-                            onChange={handleInputChange}
-                        />
-                        <input
-                            type="date"
-                            name="loanDate"
-                            data-target="bookInfo"
-                            value={bookInfo.loanDate}
-                            onChange={handleInputChange}
-                        />
-                        <input
-                            type="date"
-                            name="returnDate"
-                            data-target="bookInfo"
-                            value={bookInfo.returnDate}
-                            onChange={handleInputChange}
-                        />
-                        <button onClick={handleAddBook}>추가하기</button>
-                    </div>
+                    {!isBookPopupOpen && (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>도서명</strong>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        data-target="bookInfo"
+                                        value={bookInfo.title}
+                                        onChange={handleInputChange}
+                                        className="form-input"
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>대출 도서관</strong>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="library"
+                                        data-target="bookInfo"
+                                        value={bookInfo.library}
+                                        onChange={handleInputChange}
+                                        className="form-input"
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>대출 날짜</strong>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="loanDate"
+                                        data-target="bookInfo"
+                                        value={bookInfo.loanDate}
+                                        onChange={handleInputChange}
+                                        className="form-input"
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <label className="form-label">
+                                        <strong>반납 날짜</strong>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        name="returnDate"
+                                        data-target="bookInfo"
+                                        value={bookInfo.returnDate}
+                                        onChange={handleInputChange}
+                                        className="form-input"
+                                    />
+                                </div>
+                                <div className="modal-buttons">
+                                    <button onClick={handleAddBook}>추가</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 도서 추가 확인용 팝업 창 */}
+                    {isBookPopupOpen && (
+                        <div className="modal">
+                            <div className="modal-content">
+                                <h3>대출 도서를 추가하시겠습니까?</h3>
+                                <p>
+                                    <strong>도서명:</strong> {bookPopupData?.title}
+                                </p>
+                                <p>
+                                    <strong>도서관:</strong> {bookPopupData?.library}
+                                </p>
+                                <p>
+                                    <strong>대출 날짜:</strong> {bookPopupData?.loanDate}
+                                </p>
+                                <p>
+                                    <strong>반납 날짜:</strong> {bookPopupData?.returnDate}
+                                </p>
+                                <div className="modal-buttons">
+                                    <button onClick={handleSaveBook}>저장</button>
+                                    <button onClick={handleCloseBookPopup}>취소</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <ul className="books-list">
                         {books.map((book) => (
@@ -570,42 +718,61 @@ export default function UserComponent() {
                                 <span><strong>도서관:</strong> {book.library}</span>
                                 <span><strong>대출 날짜:</strong> {book.loanDate}</span>
                                 <span><strong>반납 날짜:</strong> {book.returnDate}</span>
-                                <button onClick={() => handleDeleteBook(book.id)}>삭제</button>
+                                <button
+                                    className="mydelete-button"
+                                    onClick={() => handleDeleteBook(book.id)}>
+                                    <i className="fas fa-times"></i>
+                                </button>
                             </li>
                         ))}
                     </ul>
                 </section>
 
                 {/* 즐겨찾기 섹션 */}
-                <section className="mysection-container">
+                <section id="section3" data-section="section3" className="mysection-container">
                     <h2>즐겨찾기 목록</h2>
-                    <ul className="favorites-list">
+
+                    <ul className="fav-list">
                         {favorites.length > 0 ? (
                             favorites.map((fav) => (
-                                <li key={fav.isbn13} className="favorite-item">
+                                <li key={fav.isbn13} className="fav-card">
+                                    <button
+                                        className="mydelete-button"
+                                        onClick={() => handleRemoveFavorite(fav.isbn13)}
+                                        aria-label="삭제"
+                                    >
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                    {/* 책 이미지 */}
                                     <img
-                                        src={fav.bookImageURL}
-                                        alt={fav.bookname}
-                                        style={{cursor: "pointer"}}
+                                        src={fav.bookImageURL || "/placeholder.png"}
+                                        alt={fav.bookname || "이미지 없음"}
+                                        className="fav-image"
                                         onClick={() => handleTitleClick(fav)}
+                                        style={{cursor: "pointer"}}
                                     />
-                                    <div>
-                                <span
-                                    className="favorite-title"
-                                    onClick={() => handleTitleClick(fav)}
-                                >
-                                    {fav.bookname}
-                                </span>
-                                        <p><strong>저자:</strong>{" "}
+                                    {/* 책 정보 */}
+                                    <div className="fav-details">
+                                        <h3
+                                            className="fav-title"
+                                            onClick={() => handleTitleClick(fav)} // 제목 클릭 시 이동
+                                            style={{cursor: "pointer"}} // 클릭 가능한 스타일
+                                        >
+                                            {fav.bookname || "제목 없음"}
+                                        </h3>
+                                        <p className="fav-info">
+                                            <strong>저자:</strong>{" "}
                                             {(fav.authors || "알 수 없음")
                                                 .replace(/지은이:/g, "")
-                                                .replace(/;/g, " | ")}</p>
-                                        <p><strong>출판사:</strong> {fav.publisher}</p>
-                                        <p><strong>출판연도:</strong> {fav.publication_year}</p>
+                                                .replace(/;/g, " | ")}
+                                        </p>
+                                        <p className="fav-info">
+                                            <strong>출판사:</strong> {fav.publisher || "출판사 정보 없음"}
+                                        </p>
+                                        <p className="fav-info">
+                                            <strong>출판연도:</strong> {fav.publication_year || "연도 정보 없음"}
+                                        </p>
                                     </div>
-                                    <button onClick={() => handleRemoveFavorite(fav.isbn13)}>
-                                        즐겨찾기 삭제
-                                    </button>
                                 </li>
                             ))
                         ) : (
@@ -614,8 +781,9 @@ export default function UserComponent() {
                     </ul>
                 </section>
 
+
                 {/* 추천 도서 섹션*/}
-                <section className="mysection-container">
+                <section id="section4" data-section="section4" className="mysection-container">
                     <h2>추천 도서</h2>
 
                     {recommendedBooks.length > 0 ? (
@@ -644,11 +812,13 @@ export default function UserComponent() {
                                                     alt={book.bookname}
                                                     className="mainbook-image"
                                                     onClick={() => handleTitleClick(book)}
+                                                    style={{cursor: "pointer"}}
                                                 />
                                                 <div className="recommendation-details">
                                                     <h4
                                                         className="recommendation-title"
                                                         onClick={() => handleTitleClick(book)}
+                                                        style={{cursor: "pointer"}}
                                                     >
                                                         {truncateText(book.bookname, 18)}
                                                     </h4>
@@ -693,9 +863,24 @@ export default function UserComponent() {
                 </section>
 
 
+                <a
+                    href="#"
+                    onClick={removeAllFavorites}
+                    className="detail-back-button"
+                >모든 즐겨찾기 삭제
+                </a>
+
+                <a
+                    href="#"
+                    onClick={handleDeleteUser}
+                    className="detail-back-button"
+                >회원탈퇴
+                </a>
+
                 {/*경고문구, 나중에 수정*/}
                 {message && <p>{message}</p>}
             </div>
         </div>
     );
 }
+

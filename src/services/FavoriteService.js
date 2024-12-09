@@ -58,3 +58,14 @@ export const getRecommendedBooks = async () => {
         throw error;
     }
 };
+
+// 해당 유저의 모든 즐겨찾기 삭제
+export const removeAllFavorites = async () => {
+    try {
+        const response = await apiClient.delete('/favorites/remove-all');
+        return response.data;
+    } catch (error) {
+        console.error('Error removing all favorites:', error);
+        throw error;
+    }
+};

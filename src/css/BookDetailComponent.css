@@ -1,7 +1,7 @@
 .book-details-page {
     margin: 20px auto;
     max-width: 1000px;
-    padding: 20px 30px; /* 내부 여백 */
+    padding: 20px 50px; /* 내부 여백 */
 }
 
 .book-details-page h3 {

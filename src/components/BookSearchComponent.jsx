@@ -36,6 +36,7 @@ const BookSearchComponent = () => {
         console.log('Executing search with:', { query, type, page, pageSize });
         try {
             const { books, totalPages } = await getBooks(type || 'keyword', query, page, pageSize);
+
             setResults(books);
             setTotalPages(totalPages);
         } catch (error) {
