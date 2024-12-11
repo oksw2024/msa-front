@@ -178,12 +178,11 @@ export const addUserMarker = (map, onError) => {
         },
         (error) => {
             console.error('Error fetching user location:', error);
-            onError('Failed to fetch user location.');
+            onError('위치 정보를 불러올 수 없습니다.');
         }
     );
 };
 
-// 도서관 마커 표시
 export const addLibraryMarkers = (map, libraries) => {
     if (!map || libraries.length === 0) return;
 
@@ -203,19 +202,16 @@ export const addLibraryMarkers = (map, libraries) => {
             position: coords,
         });
 
-        // CustomOverlay
+        // CustomOverlay 내용 정의
         const content = document.createElement('div');
         content.className = 'wrap';
         content.innerHTML = `
             <div class="info">
-                <div class="title">
-                    ${libName}
-                    <div class="close" title="닫기"></div>
-                </div>
+                <div class="title">${libName}</div>
                 <div class="body">
                     <div class="desc">
                         <div class="ellipsis">주소 : ${address}</div>
-                        <div class="ellipsis">운영 시간 : ${operatingTime}</div>
+                        <div class="ellipsis">운영 시간 : ${operatingTime || '정보 없음'}</div>
                     </div>
                 </div>
             </div>
@@ -223,22 +219,33 @@ export const addLibraryMarkers = (map, libraries) => {
 
         const overlay = new kakao.maps.CustomOverlay({
             content: content,
-            map: null, // 초기에는 표시되지 않음
             position: coords,
+            map: null, // 초기에는 숨김 상태
         });
 
-        // 닫기 버튼 클릭 이벤트
-        const closeButton = content.querySelector('.close');
-        closeButton.onclick = () => {
-            overlay.setMap(null); // 오버레이 숨기기
-        };
+        let hideTimeout = null; // 오버레이 숨김 타이머
 
-        // 마커 클릭 시 CustomOverlay 표시
-        kakao.maps.event.addListener(marker, 'click', () => {
+        // 마우스오버 이벤트 (마커)
+        kakao.maps.event.addListener(marker, 'mouseover', () => {
+            if (hideTimeout) {
+                clearTimeout(hideTimeout); // 이전 타이머 취소
+                hideTimeout = null;
+            }
             overlay.setMap(map); // 오버레이 표시
+        });
+
+        // 마우스아웃 이벤트 (마커)
+        kakao.maps.event.addListener(marker, 'mouseout', () => {
+            hideTimeout = setTimeout(() => {
+                overlay.setMap(null); // 오버레이 숨김
+            }, 500); // 0.5초 뒤에 오버레이 숨김
         });
     });
 };
+
+
+
+
 
 // 좌표 간 거리 계산 (단위: m)
 export const calculateDistance = (lat1, lon1, lat2, lon2) => {

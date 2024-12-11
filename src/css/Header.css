@@ -1,0 +1,130 @@
+/* 공통 스타일 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    color: #333;
+    line-height: 1.6;
+}
+
+/* 헤더 */
+.header-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: linear-gradient(90deg, #1a3e5c, #2b4d68);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    flex-wrap: nowrap;
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* 햄버거 메뉴 */
+.menu-toggle {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #fff;
+}
+
+/* 네비게이션 */
+.navbar {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: color 0.3s, background-color 0.3s;
+    border-radius: 5px;
+}
+
+.navbar a:hover {
+    color: #ffd700;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 마이페이지 네비게이션 */
+.my-navbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(90deg, #1a3e5c, #2b4d68);
+    padding: 10px 0;
+}
+
+.my-navbar-list {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.my-navbar-item {
+    position: relative;
+}
+
+.my-navbar-link {
+    text-decoration: none;
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.my-navbar-link:hover,
+.my-navbar-item.active .my-navbar-link {
+    color: #ffd700;
+}
+
+/* 활성화된 항목 하단에 가로줄 */
+.my-navbar-item.active::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: #ffd700;
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+}
+
+/* 반응형 */
+@media screen and (max-width: 700px) {
+    .my-navbar {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .my-navbar-list {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .my-navbar-link {
+        text-align: center;
+        padding: 10px 20px;
+    }
+}

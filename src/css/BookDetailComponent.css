@@ -1,10 +1,15 @@
 .book-details-page {
     margin: 20px auto;
     max-width: 1000px;
-    padding: 20px 30px; /* 내부 여백 */
+    padding: 20px 50px; /* 내부 여백 */
 }
 
 .book-details-page h3 {
+    font-size: 22px;
+}
+
+.book-details-page h4 {
+    font-size: 22px;
     margin: 20px auto;
 }
 
@@ -72,17 +77,18 @@
 }
 
 /* 리스트 항목 텍스트 */
-.library-item h3 {
+.library-item h3 span {
     margin: 0;
-    font-size: 1rem;
-    color: #007bff;
+    font-size: 1.2rem;
+    color: #0056b3;
     cursor: pointer;
     text-decoration: underline;
     transition: color 0.3s ease; /* 색상 전환 효과 */
 }
 
-.library-item h3:hover {
-    color: #0056b3; /* 호버 시 색상 변경 */
+.library-item h3 span:hover {
+    color: #007bff; /* 호버 시 색상 변경 */
+    text-decoration: none;
 }
 
 .library-item p {
@@ -91,12 +97,17 @@
     color: #555;
 }
 
+.library-item .loan-status {
+    font-weight: bold;
+    font-size: 15px;
+}
+
 /* 마지막 항목에서 하단 구분선 제거 */
 .library-item:last-child {
     border-bottom: none;
 }
 
-.back-button {
+.detail-back-button {
     display: inline-block;
     font-family: "Pretendard-Regular";
     font-size: 1rem;
@@ -106,11 +117,11 @@
     text-decoration: none;
 }
 
-.back-button:hover {
+.detail-back-button:hover {
     text-decoration: underline;
 }
 
-.back-button::before {
+.detail-back-button::before {
     content: '';
     display: inline-block;
     margin-right: 8px;
@@ -262,4 +273,5 @@
     background-color: #6c757d;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 살짝 떠 있는 효과 */
 }
+
 

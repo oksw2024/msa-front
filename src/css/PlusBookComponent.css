@@ -2,68 +2,91 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
+}
+
 .plus-book-container h1 {
-text-align: center;
-font-size: 24px;
-margin-bottom: 20px;
+    text-align: center;
+    font-size: 28px;
+    margin: 40px;
+    margin-top: 20px;
+    position: relative; /* ::after를 위한 기준 설정 */
+}
+
+.plus-book-container h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px; /* 텍스트 아래에 간격 추가 */
+    left: 50%; /* 중앙 정렬 */
+    transform: translateX(-50%); /* 중앙 정렬 보정 */
+    width: 10%; /* 언더라인 너비 */
+    height: 4px; /* 언더라인 두께 */
+    background: #999b9e; /* 언더라인 색상 */
+    border-radius: 2px; /* 모서리를 둥글게 */
 }
 
 .book-list {
-list-style: none;
-padding: 0;
-margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .book-item {
-display: flex;
-gap: 20px;
-align-items: center;
-margin-bottom: 20px;
-padding: 10px;
-border: 1px solid #ddd;
-border-radius: 8px;
-background-color: #fff;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
 }
 
 .book-image {
-width: 100px;
-height: auto;
-border-radius: 4px;
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
 }
 
 .book-details {
-flex: 1;
+    flex: 1;
+    text-align: left;
 }
 
 .book-details h4 {
-font-size: 18px;
-margin: 0 0 10px;
+    font-size: 18px;
+    margin-top: 5px;
 }
 
 .book-details p {
-margin: 5px 0;
-font-size: 14px;
+    margin: 5px 0;
+    font-size: 14px;
 }
 
-.back-button {
-display: inline-block;
-padding: 10px 20px;
-margin-bottom: 20px;
-background-color: #007bff;
-color: white;
-border: none;
-border-radius: 5px;
-cursor: pointer;
-font-size: 16px;
-transition: background-color 0.3s ease;
+.book-link {
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: none;
 }
 
-.back-button:hover {
-background-color: #0056b3;
+.book-link:hover {
+    text-decoration: underline;
+}
+
+.back-link {
+    display: block;
+    text-align: left;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.back-arrow {
+    font-size: 18px;
+    margin-right: 5px;
+    vertical-align: middle;
 }
