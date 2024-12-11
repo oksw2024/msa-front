@@ -1,129 +1,151 @@
-/* 검색창 스타일 */
-.search-container {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.search-form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.search-select, .search-input, .search-button {
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    outline: none;
-}
-
-.search-button {
-    background-color: #4CAF50;
-    color: #fff;
-    cursor: pointer;
-    border: none;
-}
-
-.search-button:hover {
-    background-color: #45a049;
-}
-
-.search-title {
-    margin-bottom: 20px;
-    font-size: 1.2rem;
-    font-weight: bold;
+body {
+    background-color: #ffffff;
     color: #333;
+}
+
+/* 검색 결과 제목 */
+.search-result-title {
+    position: relative; /* 자식 요소 위치 조정을 위해 relative 설정 */
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    padding-left: 20px;
+    color: #333;
+    background: #ffffff;
+    z-index: 1;
+}
+
+.search-result-title::before {
+    content: '';
+    position: absolute;
+    top: -12px; /* 텍스트 위로 10px 확장 */
+    bottom: -10px; /* 텍스트 아래로 10px 확장 */
+    left: 0;
+    right: 0;
+    background: #f7f7f7;
+    z-index: -1; /* 배경을 텍스트 뒤로 보내기 */
+    border-radius: 5px; /* 둥근 모서리 추가 */
+    border: 1px solid #dddddd;
 }
 
 /* 수평 리스트 스타일 */
-.book-list {
+.search-book-list {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    flex-direction: column; /* 세로 리스트 */
+    gap: 0px;
+    padding: 0;
 }
 
-.book-item {
+.search-book-item {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 15px 0; /* 위아래 여백 */
+    border-bottom: 1px solid #ddd; /* 가로 구분선 */
+    transition: background-color 0.3s ease; /* 부드러운 호버 효과 */
 }
 
-.book-image {
-    width: 80px;
-    height: auto;
-    border-radius: 4px;
+/* 마지막 아이템 아래 구분선 제거 */
+.search-book-item:last-child {
+    border-bottom: none;
 }
 
-.book-details {
-    flex: 1;
+/* 이미지 스타일 */
+.search-book-image {
+    width: 120px;
+    height: 180px;
+    border-radius: 4px; /* 살짝 둥근 모서리 */
+    margin-left: 10px;
+    object-fit: cover;
 }
 
-.book-title {
-    font-size: 1rem;
+.search-book-result-title {
+    font-family: "Pretendard-SemiBold";
+    font-size: 1.2rem;
     font-weight: bold;
     margin: 0;
     color: #333;
+    line-height: 1.5;
 }
 
-.book-author, .book-year {
+.search-book-author, .search-book-publisher, .search-book-year {
     font-size: 0.9rem;
     color: #666;
-    margin: 5px 0;
+    margin: 9px 0;
 }
 
-.book-link {
+.search-book-link {
     display: inline-block;
-    padding: 5px 10px;
+    padding: 6px 16px; /* 버튼 크기 조정 */
     font-size: 0.9rem;
-    color: #fff;
-    background-color: #007BFF;
-    border-radius: 4px;
+    color: #fff; /* 텍스트 색상 */
+    background-color: #99a3ae;
+    border: none; /* 테두리 제거 */
+    border-radius: 50px; /* 둥근 모양 */
     text-decoration: none;
+    margin-top: 5px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease; /* 부드러운 전환 */
+    cursor: pointer;
 }
 
-.book-link:hover {
-    background-color: #0056b3;
+.search-book-link:hover {
+    background-color: #6c757d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 호버 효과 */
+.search-book-item:hover {
+    background-color: #f4f4f4; /* 부드러운 강조 효과 */
 }
 
 .pagination-container {
     text-align: center;
     margin-top: 20px;
+    margin-bottom: 50px;
 }
 
 .pagination {
     display: inline-flex;
     list-style: none;
     padding: 0;
+    gap: 5px; /* 버튼 간격 */
 }
 
 .page-item {
-    margin: 0 5px;
+    margin: 0;
 }
 
 .page-link {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
+    width: 40px; /* 원형 크기 */
+    height: 40px; /* 원형 크기 */
+    border-radius: 50%; /* 원형 모양 */
+    padding: 0; /* 내부 여백 제거 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ccc; /* 테두리 */
     text-decoration: none;
     color: #333;
+    background-color: #ffffff;
     cursor: pointer;
+    font-size: 0.9rem; /* 글자 크기 */
+    transition: background-color 0.3s ease, color 0.3s ease; /* 부드러운 전환 효과 */
 }
 
 .page-link:hover {
-    background-color: #ddd;
-}
-
-.page-item.active .page-link {
-    background-color: #007bff;
-    color: #fff;
+    background-color: #ddd; /* 호버 시 배경색 */
 }
 
 .page-item.disabled .page-link {
-    cursor: not-allowed;
-    opacity: 0.5;
+    color: #ccc; /* 비활성 상태 텍스트 색상 */
+    background-color: #f4f4f4; /* 비활성 상태 배경색 */
+    pointer-events: none; /* 클릭 비활성화 */
 }
 
+.page-item.active .page-link {
+    font-weight: bold;
+    background-color: #6c757d; /* 활성 상태 회색 */
+    color: white; /* 텍스트 흰색 */
+    border: none; /* 활성 상태에서 테두리 제거 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* 약간의 그림자 효과 */
+}

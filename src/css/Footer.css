@@ -1,0 +1,50 @@
+.footer {
+    position: static; /* 기본값으로 설정해 화면 하단에 고정되지 않음 */
+    width: 100%;
+    background-color: #f9f9f9;
+    border-top: 1px solid #ddd;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* 전체 화면 높이를 채움 */
+    margin: 0; /* 기본 마진 제거 */
+}
+
+html, body {
+    height: 100%; /* Flexbox가 올바르게 작동하도록 */
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.footer-link {
+    text-decoration: none;
+    color: #427198;
+    font-weight: bold;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+}
+
+.footer-info p {
+    margin: 5px 0;
+    font-size: 13px;
+    color: #666;
+}

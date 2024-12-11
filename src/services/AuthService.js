@@ -13,6 +13,8 @@ export const signup = async (userDetails) => {
     return response.data;
   } catch (error) {
     console.error('Error:', error);
+    // 오류를 그대로 throw하여 상위 호출자가 처리하도록 함
+    throw error;
   }
 };
 

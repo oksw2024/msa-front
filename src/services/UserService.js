@@ -1,24 +1,41 @@
-import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1/user';
+import apiClient from './AxiosInstance';
 
-export const findUser = async (accessToken) => {
-  const response = await axios.get(API_BASE_URL, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+
+
+const USER_API = '/v1/user';
+
+export const findUser = async () => {
+  try {
+    const response = await apiClient.get(USER_API);
+    console.log('User data fetched successfully:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error in findUser:', error.response || error.message);
+    throw error;
+  }
+};
+
+
+export const updateUser = async (userDetails) => {
+  const response = await apiClient.put(USER_API, userDetails);
   return response.data;
 };
 
-export const updateUser = async (accessToken, userDetails) => {
-  const response = await axios.put(API_BASE_URL, userDetails, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+export const deleteUser = async () => {
+  const response = await apiClient.delete(USER_API);
   return response.data;
 };
 
-export const deleteUser = async (accessToken) => {
-  const response = await axios.delete(API_BASE_URL, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  return response.data;
+export const changePassword = async (currentPassword, newPassword) => {
+  try {
+    return await apiClient.post('/v1/user/change-password', {
+      currentPassword,
+      newPassword,
+    });
+  } catch (error) {
+    throw error;
+  }
 };
+
+

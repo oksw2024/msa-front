@@ -23,7 +23,7 @@ const BookDetailComponent = () => {
     const [error, setError] = useState(null);
     const [userCoords, setUserCoords] = useState(null);
     const [isUserCoordsReady, setIsUserCoordsReady] = useState(false);
-    const [visibleCount, setVisibleCount] = useState(5); //도서관 리스트 표시 개수
+    const [visibleCount, setVisibleCount] = useState(3); //도서관 리스트 표시 개수
     const [isFavorite, setIsFavorite] = useState(false); //즐겨찾기
 
     // 서버에서 초기 즐겨찾기 상태 가져오기
@@ -42,7 +42,7 @@ const BookDetailComponent = () => {
         }
     }, [bookDetails]);
 
-    // 즐겨찾기 상태 변경 
+    // 즐겨찾기 상태 변경
     const toggleFavorite = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
@@ -52,9 +52,9 @@ const BookDetailComponent = () => {
 
         try {
             if (isFavorite) {
-                await removeFavorite(accessToken, bookDetails.isbn13);
+                await removeFavorite(bookDetails.isbn13);
             } else {
-                await addFavorite(accessToken, bookDetails); // 책 상세 정보를 전달
+                await addFavorite(bookDetails); // 책 상세 정보를 전달
             }
             setIsFavorite(!isFavorite);
         } catch (error) {
@@ -175,16 +175,12 @@ const BookDetailComponent = () => {
 // 도서관 리스트 가져오기 및 거리 계산
     useEffect(() => {
         const fetchLibraries = async () => {
-            if (!bookDetails?.isbn13 || !isUserCoordsReady) {
-                //console.warn('사용자 위치 또는 도서 정보가 준비되지 않았습니다.');
-                return;
-            }
+            if (!bookDetails?.isbn13 || !isUserCoordsReady) return;
 
             try {
                 const libs = await getLibraries(bookDetails.isbn13);
 
                 if (userCoords) {
-                    // 거리 계산 및 정렬
                     const updatedLibraries = libs.map((lib) => {
                         if (lib.latitude && lib.longitude) {
                             lib.distance = calculateDistance(
@@ -196,14 +192,21 @@ const BookDetailComponent = () => {
                         } else {
                             lib.distance = Number.MAX_SAFE_INTEGER;
                         }
+                        lib.loanStatus = null; // 초기 상태
+                        lib.checked = false; // 대출 상태 확인 여부
                         return lib;
                     });
 
                     updatedLibraries.sort((a, b) => a.distance - b.distance);
                     setLibraries(updatedLibraries);
                 } else {
-                    // 거리 없이 도서관 리스트 설정
-                    setLibraries(libs.map((lib) => ({ ...lib, distance: null })));
+                    const updatedLibraries = libs.map((lib) => ({
+                        ...lib,
+                        distance: null,
+                        loanStatus: null,
+                        checked: false,
+                    }));
+                    setLibraries(updatedLibraries);
                 }
             } catch (err) {
                 console.error('Error fetching libraries:', err);
@@ -222,35 +225,48 @@ const BookDetailComponent = () => {
         }
     }, [map, libraries]);
 
-    const handleCheckExist = async (libCode, index) => {
 
-        if (!bookDetails?.isbn13 || !libCode) {
-            setError('도서 또는 도서관 정보가 올바르지 않습니다.');
-            return;
+
+    // 대출 상태 확인
+    const fetchLoanStatuses = async (start, end) => {
+        const updatedLibraries = [...libraries];
+
+        const toCheck = updatedLibraries.slice(start, end).filter((lib) => !lib.checked);
+
+        for (const lib of toCheck) {
+            try {
+                const response = await checkBookExist(bookDetails.isbn13, lib.libCode);
+                lib.loanStatus =
+                    response.loanAvailable === "Y" ? '현재 대출 가능' : '현재 대출 불가';
+                lib.checked = true; // 상태 확인 완료
+            } catch {
+                lib.loanStatus = '도서 상태 확인 불가';
+                lib.checked = true; // 상태 확인 완료
+            }
         }
 
-        try {
-            const response = await checkBookExist(bookDetails.isbn13, libCode);
-
-            const updatedLibraries = [...libraries];
-            // API 응답에 따라 상태 업데이트
-            updatedLibraries[index].loanStatus = response.loanAvailable === "Y" ? '현재 대출 가능' : '현재 대출 불가';
-            updatedLibraries[index].buttonVisible = false;
-            setLibraries(updatedLibraries);
-        } catch {
-            alert('도서 보유 여부를 확인할 수 없습니다.');
-        }
+        setLibraries(updatedLibraries);
     };
 
+
+    useEffect(() => {
+        if (libraries.length > 0) {
+            fetchLoanStatuses(0, visibleCount);
+        }
+    }, [libraries.length, visibleCount]);
+
     const handleShowMore = () => {
-        setVisibleCount((prev) => prev + 5); // 5개씩 추가로 표시
+        const previousCount = visibleCount;
+        setVisibleCount((prev) => prev + 3); // 3개씩 추가 표시
+
+        fetchLoanStatuses(previousCount, previousCount + 3); // 새로 보이는 도서관만 상태 확인
     };
 
     if (!bookDetails) {
         return (
             <div className="book-details-page">
                 <h2>서적 정보가 존재하지 않습니다.</h2>
-                <button onClick={() => navigate(-1)} className="login-back-button">뒤로가기</button>
+                <a onClick={() => navigate(-1)} className="detail-back-button">뒤로가기</a>
             </div>
         );
     }
@@ -263,7 +279,7 @@ const BookDetailComponent = () => {
                     e.preventDefault(); // 기본 동작 방지
                     navigate(-1); // 뒤로가기 기능
                 }}
-                className="back-button"
+                className="detail-back-button"
             >뒤로가기
             </a>
             <div className="book-detail-content">
@@ -322,28 +338,15 @@ const BookDetailComponent = () => {
                                 </p>
                             )}
                             <p>전화번호: {library.tel || '전화번호 정보 없음'}</p>
-                            {/*{library.homepage && (*/}
-                            {/*    <a href={library.homepage} target="_blank" rel="noopener noreferrer" className="library-link">홈페이지</a>*/}
-                            {/*)}*/}
-                            {/*홈페이지 넣을까 말까 고민...*/}
-
-                            {/* 대출 상태 표시 */}
-                            {library.buttonVisible !== false ? (
-                                <button
-                                    className="check-exist-button"
-                                    onClick={() => handleCheckExist(library.libCode, index)}
-                                >
-                                    도서 확인
-                                </button>
-                            ) : (
-                                <p className="loan-status">
-                                    {library.loanStatus === '현재 대출 가능' ? (
-                                        <span style={{color: 'green'}}>{library.loanStatus}</span>
-                                    ) : (
-                                        <span style={{color: 'red'}}>{library.loanStatus}</span>
-                                    )}
-                                </p>
-                            )}
+                            <p className="loan-status">
+                                {library.loanStatus === '현재 대출 가능' ? (
+                                    <span style={{color: 'green'}}>{library.loanStatus}</span>
+                                ) : library.loanStatus === '현재 대출 불가' ? (
+                                    <span style={{color: 'red'}}>{library.loanStatus}</span>
+                                ) : (
+                                    <span>{library.loanStatus || '대출 상태 확인 중...'}</span>
+                                )}
+                            </p>
                         </li>
                     ))}
                 </ul>
