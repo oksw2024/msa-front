@@ -776,7 +776,7 @@ export default function UserComponent({handleLogout}) {
                                             onClick={() => handleTitleClick(fav)} // 제목 클릭 시 이동
                                             style={{cursor: "pointer"}} // 클릭 가능한 스타일
                                         >
-                                            {fav.bookname || "제목 없음"}
+                                            {truncateText(fav.bookname, 15)}
                                         </h3>
                                         <p className="fav-info">
                                             <strong>저자:</strong>{" "}
