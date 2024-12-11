@@ -804,79 +804,81 @@ export default function UserComponent({handleLogout}) {
                 <section id="section4" data-section="section4" className="mysection-container">
                     <h2>추천 도서</h2>
 
-                    {recommendedBooks.length > 0 ? (
-                        <div className="my-carousel-container">
-                            {/* 왼쪽 화살표 */}
-                            <button
-                                className="main-arrow left"
-                                onClick={() =>
-                                    setCurrentPage((prevPage) => Math.max(prevPage - 1, 0))
-                                }
-                                disabled={currentPage === 0}
-                            >
-                            </button>
+                    {favorites.length <= 0 ? (
+                        <p>추천 도서가 없습니다.</p>
+                    ) : recommendedBooks.length > 0 ? (
+                            <div className="my-carousel-container">
+                                {/* 왼쪽 화살표 */}
+                                <button
+                                    className="main-arrow left"
+                                    onClick={() =>
+                                        setCurrentPage((prevPage) => Math.max(prevPage - 1, 0))
+                                    }
+                                    disabled={currentPage === 0}
+                                >
+                                </button>
 
-                            <div className="main-carousel">
-                                <ul className='main-horizontal-list'>
-                                    {recommendedBooks
-                                        .slice(
-                                            currentPage * itemsPerPage,
-                                            (currentPage + 1) * itemsPerPage
-                                        )
-                                        .map((book, index) => (
-                                            <li key={index} className="recommendation-card">
-                                                <img
-                                                    src={book.bookImageURL}
-                                                    alt={book.bookname}
-                                                    className="mainbook-image"
-                                                    onClick={() => handleTitleClick(book)}
-                                                    style={{cursor: "pointer"}}
-                                                />
-                                                <div className="recommendation-details">
-                                                    <h4
-                                                        className="recommendation-title"
-                                                        onClick={() => handleTitleClick(book)}
-                                                        style={{cursor: "pointer"}}
-                                                    >
-                                                        {truncateText(book.bookname, 18)}
-                                                    </h4>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    {/* 빈 요소 추가 */}
-                                    {Array.from({
-                                        length: itemsPerPage -
-                                            recommendedBooks.slice(
+                                <div className="main-carousel">
+                                    <ul className='main-horizontal-list'>
+                                        {recommendedBooks
+                                            .slice(
                                                 currentPage * itemsPerPage,
                                                 (currentPage + 1) * itemsPerPage
-                                            ).length,
-                                    }).map((_, index) => (
-                                        <li key={`empty-${index}`} className="recommendation-card empty"></li>
-                                    ))}
-                                </ul>
-                            </div>
+                                            )
+                                            .map((book, index) => (
+                                                <li key={index} className="recommendation-card">
+                                                    <img
+                                                        src={book.bookImageURL}
+                                                        alt={book.bookname}
+                                                        className="mainbook-image"
+                                                        onClick={() => handleTitleClick(book)}
+                                                        style={{cursor: "pointer"}}
+                                                    />
+                                                    <div className="recommendation-details">
+                                                        <h4
+                                                            className="recommendation-title"
+                                                            onClick={() => handleTitleClick(book)}
+                                                            style={{cursor: "pointer"}}
+                                                        >
+                                                            {truncateText(book.bookname, 18)}
+                                                        </h4>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        {/* 빈 요소 추가 */}
+                                        {Array.from({
+                                            length: itemsPerPage -
+                                                recommendedBooks.slice(
+                                                    currentPage * itemsPerPage,
+                                                    (currentPage + 1) * itemsPerPage
+                                                ).length,
+                                        }).map((_, index) => (
+                                            <li key={`empty-${index}`} className="recommendation-card empty"></li>
+                                        ))}
+                                    </ul>
+                                </div>
 
-                            {/* 오른쪽 화살표 */}
-                            <button
-                                className="main-arrow right"
-                                onClick={() =>
-                                    setCurrentPage((prevPage) =>
-                                        Math.min(
-                                            prevPage + 1,
-                                            Math.ceil(recommendedBooks.length / itemsPerPage) -
-                                            1
+                                {/* 오른쪽 화살표 */}
+                                <button
+                                    className="main-arrow right"
+                                    onClick={() =>
+                                        setCurrentPage((prevPage) =>
+                                            Math.min(
+                                                prevPage + 1,
+                                                Math.ceil(recommendedBooks.length / itemsPerPage) -
+                                                1
+                                            )
                                         )
-                                    )
-                                }
-                                disabled={
-                                    currentPage ===
-                                    Math.ceil(recommendedBooks.length / itemsPerPage) - 1
-                                }
-                            >
-                            </button>
-                        </div>
-                    ) : (
-                        <p>추천 도서가 없습니다.</p>
+                                    }
+                                    disabled={
+                                        currentPage ===
+                                        Math.ceil(recommendedBooks.length / itemsPerPage) - 1
+                                    }
+                                >
+                                </button>
+                            </div>
+                        ) : (
+                            <p>추천 도서가 없습니다.</p>
                     )}
                 </section>
 
