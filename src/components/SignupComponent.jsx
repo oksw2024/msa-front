@@ -38,23 +38,50 @@ export default function SignupComponent() {
         setCheckMessage("");
         setEmailMessage("");
 
-        // 공백 체크
+        const usernameRegex = /^[가-힣a-zA-Z0-9]+$/;
         if (!username.trim()) {
-            setNameMessage("사용자 이름을 입력해주세요.");
+            setNameMessage('사용자 이름을 입력해주세요.');
             return;
-        } else if (!loginId.trim()) {
-            setIdMessage("아이디를 입력해주세요.");
+        } else if (!usernameRegex.test(username)) {
+            setNameMessage("사용자 이름은 한글, 영문자, 숫자로 입력해주세요.");
             return;
-        } else if (!password.trim()) {
-            setPasswordMessage("비밀번호를 입력해주세요.");
-            return;
-        } else if (!passwordTest.trim()) {
-            setCheckMessage("비밀번호 확인을 입력해주세요.");
-            return;
-        } else if (!email.trim()) {
-            setEmailMessage("이메일을 입력해주세요.");
-            return;
+        } else {
+            setNameMessage('');
         }
+
+        const loginIdRegex = /^[a-zA-Z0-9]{4,20}$/;
+        if (!loginId.trim()) {
+            setIdMessage('아이디를 입력해주세요.');
+            return;
+        } else if (!loginIdRegex.test(loginId)) {
+            setIdMessage('아이디는 영문자와 숫자로 4자 이상 20자 이하로 입력해주세요.');
+            return;
+        } else {
+            setIdMessage('');
+        }
+
+        const passwordRegex = /^(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!password.trim()) {
+            setPasswordMessage('비밀번호를 입력해주세요.');
+            return;
+        } else if (!passwordRegex.test(password)) {
+            setPasswordMessage('비밀번호는 최소 8자 이상이어야 하며, 반드시 특수문자를 포함해야 합니다.');
+            return;
+        } else {
+            setPasswordMessage('');
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.trim()) {
+            setEmailMessage('이메일을 입력해주세요.');
+            return;
+        } else if (!emailRegex.test(email)) {
+            setEmailMessage('유효한 이메일 주소를 입력해주세요.');
+            return;
+        } else {
+            setEmailMessage('');
+        }
+
 
         if (password !== passwordTest) {
             setCheckMessage("비밀번호가 일치하지 않습니다.");
@@ -63,6 +90,7 @@ export default function SignupComponent() {
 
         try {
             const result = await signup({username, loginId, password, email});
+            alert(username + '님, 가입을 환영합니다.');
             navigate('/'); // 회원가입 성공 후 메인 페이지로 이동
         } catch (error) {
             // 서버가 응답을 반환했으나 오류인 경우
@@ -88,45 +116,6 @@ export default function SignupComponent() {
         }
     };
 
-    const handleBlur = (field) => {
-        if (field === 'username') {
-            const usernameRegex = /^[가-힣a-zA-Z0-9]+$/;
-            if (!username.trim()) {
-                setNameMessage('사용자 이름을 입력해주세요.');
-            } else if (!usernameRegex.test(username)) {
-                setNameMessage("사용자 이름은 한글, 영문자, 숫자로 입력해주세요.");
-            } else {
-                setNameMessage('');
-            }
-        } else if (field === 'loginId') {
-            const loginIdRegex = /^[a-zA-Z0-9]{4,20}$/;
-            if (!loginId.trim()) {
-                setIdMessage('아이디를 입력해주세요.');
-            } else if (!loginIdRegex.test(loginId)) {
-                setIdMessage('아이디는 영문자와 숫자로 4자 이상 20자 이하로 입력해주세요.');
-            } else {
-                setIdMessage('');
-            }
-        } else if (field === 'password') {
-            const passwordRegex = /^(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-            if (!password.trim()) {
-                setPasswordMessage('비밀번호를 입력해주세요.');
-            } else if (!passwordRegex.test(password)) {
-                setPasswordMessage('비밀번호는 최소 8자 이상이어야 하며, 반드시 특수문자를 포함해야 합니다.');
-            } else {
-                setPasswordMessage('');
-            }
-        } else if (field === 'email') {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email.trim()) {
-                setEmailMessage('이메일을 입력해주세요.');
-            } else if (!emailRegex.test(email)) {
-                setEmailMessage('유효한 이메일 주소를 입력해주세요.');
-            } else {
-                setEmailMessage('');
-            }
-        }
-    };
 
     return (
         <div className="card-container">

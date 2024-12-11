@@ -113,7 +113,34 @@ body {
 
 /* 반응형 */
 @media screen and (max-width: 700px) {
+    .menu-toggle {
+        display: block; /* 모바일 화면에서 표시 */
+    }
+
+    .navbar {
+        display: none; /* 기본적으로 숨김 */
+        flex-direction: column;
+        gap: 10px;
+        background-color: #1a3e5c; /* 배경색 추가 */
+        position: absolute;
+        top: 60px; /* 헤더 아래로 이동 */
+        left: 0;
+        right: 0;
+        z-index: 999;
+        padding: 15px 0;
+    }
+
+    .navbar a {
+        text-align: center;
+        width: 100%;
+    }
+
+    .navbar.open {
+        display: flex; /* 메뉴가 열렸을 때 표시 */
+    }
+
     .my-navbar {
+        display: none;
         flex-direction: column;
         padding: 15px;
     }

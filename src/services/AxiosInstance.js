@@ -65,4 +65,29 @@ apiClient.interceptors.response.use(
     }
 );
 
+
+//디버깅용
+// apiClient.interceptors.request.use(
+//     (config) => {
+//         console.log('API Request Config:', config);
+//         return config;
+//     },
+//     (error) => {
+//         console.error('API Request Error:', error);
+//         return Promise.reject(error);
+//     }
+// );
+//
+// apiClient.interceptors.response.use(
+//     (response) => {
+//         console.log('API Response:', response);
+//         return response;
+//     },
+//     (error) => {
+//         console.error('API Response Error:', error);
+//         return Promise.reject(error);
+//     }
+// );
+
+
 export default apiClient;

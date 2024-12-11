@@ -41,6 +41,14 @@ function Header({isLoggedIn, handleLogout}) {
     }, []);
 
 
+    //로그아웃 시 경로설정
+    const handleLogoutAndRedirect = () => {
+        handleLogout();
+        if (location.pathname === '/user') {
+            navigate('/'); // 마이페이지였을 때는 홈으로 이동
+        }
+    };
+
     ///////////////////my-navbar
     useEffect(() => {
         const sections = document.querySelectorAll("[data-section]");
@@ -62,13 +70,26 @@ function Header({isLoggedIn, handleLogout}) {
 
         // Initialize Intersection Observer
         const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-        // Observe each section
         sections.forEach((section) => observer.observe(section));
 
-        // Cleanup observer on unmount
         return () => observer.disconnect();
     }, []);
+
+    useEffect(() => {
+        const rootElement = document.documentElement;
+        rootElement.style.scrollBehavior = 'smooth';
+
+        return () => {
+            rootElement.style.scrollBehavior = 'auto';
+        };
+    }, []);
+
+    const scrollToSection = (sectionId) => {
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.scrollIntoView({ behavior: "smooth",  block: "center" });
+        }
+    };
 
     return (
         <header className="header-container">
@@ -89,7 +110,7 @@ function Header({isLoggedIn, handleLogout}) {
                             <>
                                 {isLoggedIn ? (
                                     <>
-                                        <a href="#" onClick={handleLogout}>로그아웃</a>
+                                        <a href="#" onClick={handleLogoutAndRedirect}>로그아웃</a>
                                         {!shouldHideMyPageButton && (
                                             <a href="#" onClick={() => navigate('/user')}>마이페이지</a>
                                         )}
@@ -120,6 +141,10 @@ function Header({isLoggedIn, handleLogout}) {
                                 <a
                                     href={`#${sectionId}`}
                                     className="my-navbar-link"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        scrollToSection(sectionId);
+                                    }}
                                 >
                                     {sectionId === "section1"
                                         ? "사용자 정보"

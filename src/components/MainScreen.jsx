@@ -262,7 +262,6 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
                 </ul>
 
                 {loading && <p>Loading recommended books...</p>}
-                {error && <p>Error: {error}</p>}
 
                 {paginatedBooks.length > 0 && (
                     <div className="main-carousel-container">
@@ -333,7 +332,6 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
                     </li>
                 </ul>
                 {loading && <p>Loading recommended books...</p>}
-                {error && <p>Error: {error}</p>}
 
                 {paginatedBooks2.length > 0 && (
                     <div className="main-carousel-container">

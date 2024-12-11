@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { login } from '../services/AuthService';
-import { useNavigate } from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import "../css/LoginComponent.css";
 
 function LoginComponent({ onLogin }) {
@@ -9,6 +9,7 @@ function LoginComponent({ onLogin }) {
     const [idMessage, setIdMessage] = useState('');
     const [passwordMessage, setPasswordMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false); // 중복 클릭 방지용 상태
     const navigate = useNavigate();
 
     const handleBack = async () => {
@@ -20,14 +21,27 @@ function LoginComponent({ onLogin }) {
     }
 
     const handleLogin = async () => {
+        if (isSubmitting) return; // 중복 실행 방지
+
         setIdMessage('');
         setPasswordMessage('');
+        setIsSubmitting(true);
 
+        // 입력값 검증
+        let hasError = false;
         if (!loginId.trim()) {
             setIdMessage("아이디를 입력해주세요.");
-            return;
-        } else if (!password.trim()) {
+            hasError = true;
+        }
+
+        if (!password.trim()) {
             setPasswordMessage("비밀번호를 입력해주세요.");
+            hasError = true;
+        }
+
+        // 에러 발생 시 로직 중단
+        if (hasError) {
+            setIsSubmitting(false);
             return;
         }
 
@@ -35,15 +49,14 @@ function LoginComponent({ onLogin }) {
             const response = await login({ loginId, password });
             localStorage.setItem('accessToken', response.accessToken);
             localStorage.setItem('refreshToken', response.refreshToken);
-            onLogin();
-            navigate(-1); // 뒤로가기 기능
+            onLogin()
+            navigate(-2); // 나중에 확인
+
         } catch (error) {
             setPasswordMessage('아이디 혹은 비밀번호가 틀렸습니다.');
+        } finally {
+            setIsSubmitting(false); // 로직 완료 후 상태 초기화
         }
-    };
-
-    const handleSignup = () => {
-        navigate('/signup'); // 회원가입 페이지로 이동
     };
 
     return (
@@ -81,7 +94,9 @@ function LoginComponent({ onLogin }) {
                 </div>
                 {passwordMessage && <p className="error">{passwordMessage}</p>}
                 <div className='button-container'>
-                    <button onClick={handleLogin}>로그인</button>
+                    <button onClick={handleLogin} disabled={isSubmitting}>
+                        {isSubmitting ? "로그인 중..." : "로그인"}
+                    </button>
                 </div>
                 <p className="additional-text">
                     아직 회원이 아니신가요? <span onClick={() => navigate('/signup')}>회원가입</span>

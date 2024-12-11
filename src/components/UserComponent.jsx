@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {deleteUser, findUser, updateUser} from '../services/UserService';
 import {getFavorites, removeFavorite, getRecommendedBooks, removeAllFavorites} from '../services/FavoriteService';
 import {useNavigate} from 'react-router-dom';
@@ -35,9 +35,20 @@ export default function UserComponent({handleLogout}) {
     const navigate = useNavigate();
 
     const [message, setMessage] = useState('');
+    const [userMessage, setUserMessage] = useState('');
+
+    const [passwordMessage, setPasswordMessage] = useState('');
+    const [newPasswordMessage, setNewPasswordMessage] = useState('');
+    const [userNameMessage, setUserNameMessage] = useState('');
+    const [userEmailMessage, setUserEmailMessage] = useState('');
+    const [borrowMessage1, setBorrowMessage1] = useState('');
+    const [borrowMessage2, setBorrowMessage2] = useState('');
+    const [borrowMessage3, setBorrowMessage3] = useState('');
+    const [borrowMessage4, setBorrowMessage4] = useState('');
 
     useEffect(() => {
         handleFindUser();
+        fetchRecommendations();
     }, []);
 
     const handleBack = () => {
@@ -55,7 +66,7 @@ export default function UserComponent({handleLogout}) {
             console.log('User deleted.');
 
             // 3. 클라이언트 로그아웃
-            alert('회원탈퇴 성공!');
+            alert('회원탈퇴가 완료되었습니다.');
             localStorage.clear();
             handleLogout();
             navigate('/');
@@ -66,37 +77,34 @@ export default function UserComponent({handleLogout}) {
     };
 
     const handleFindUser = async () => {
+
         let retryCount = 0; // 재시도 횟수
-        const maxRetries = 1; // 최대 재시도 횟수
+        const maxRetries = 2; // 최대 재시도 횟수
 
         const fetchUserWithRetry = async () => {
             try {
                 const user = await findUser(); // 사용자 데이터 요청
                 if (user) {
+                    console.log("User data fetched successfully:", user);
                     setUserData(user); // 사용자 데이터 설정
                     setFormData({
                         username: user.username || "",
                         email: user.email || "",
                     });
-                } else if (retryCount < maxRetries) {
-                    retryCount += 1;
-                    console.warn(`Retrying fetch user data... Attempt: ${retryCount}`);
-                    setTimeout(fetchUserWithRetry, 1000); // 1초 지연 후 재시도
                 } else {
-                    console.error("Failed to fetch user data after 3 attempts.");
-                    setMessage("사용자 데이터를 불러오지 못했습니다.");
+                    throw new Error("No user data returned.");
                 }
             } catch (error) {
+                console.error("Error fetching user:", error);
                 if (retryCount < maxRetries) {
-                    retryCount += 1;
-                    console.warn(`Retrying due to error... Attempt: ${retryCount}`);
-                    setTimeout(fetchUserWithRetry, 1000); // 1초 지연 후 재시도
+                    retryCount++;
+                    console.log(`Retrying fetch user data... Attempt ${retryCount}`);
+                    setTimeout(fetchUserWithRetry, 1000);
                 } else {
-                    console.error("Error fetching user data after 3 attempts:", error);
-                    setMessage("사용자 데이터를 불러오는 중 오류가 발생했습니다.");
+                    setUserMessage("사용자 데이터를 불러오지 못했습니다.");
                 }
             } finally {
-                setIsLoading(false); // 로딩 상태 해제
+                setIsLoading(false);
             }
         };
 
@@ -140,6 +148,8 @@ export default function UserComponent({handleLogout}) {
 
     const handleOpenPasswordModal = () => {
         setPasswordData({currentPassword: "", newPassword: ""});
+        setPasswordMessage('');
+        setNewPasswordMessage('');
         setIsPasswordModalOpen(true);
     };
 
@@ -152,9 +162,10 @@ export default function UserComponent({handleLogout}) {
     };
 
     const handleUpdateUser = async () => {
+        if (!validateFormData()) return; // 유효성 검사 실패 시 종료
+
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
-            setMessage('토큰을 찾을 수 없습니다.');
             return;
         }
 
@@ -163,26 +174,52 @@ export default function UserComponent({handleLogout}) {
             await updateUser({...userData, ...formData}); // 사용자 데이터 업데이트
             await handleFindUser(); // 데이터 새로 불러오기
             setIsModalOpen(false); // 모달 닫기
-            setMessage("사용자 정보가 업데이트되었습니다.");
+            alert("사용자 정보가 업데이트되었습니다.");
         } catch (error) {
-            setMessage("사용자 정보를 업데이트하지 못했습니다.");
+            alert("사용자 정보 업데이트에 실패하였습니다.");
         } finally {
             setIsLoading(false); // 로딩 종료
         }
     };
 
+    const validateFormData = () => {
+        let isValid = true;
+
+        // 이름 유효성 검사
+        if (!/^[a-zA-Z0-9가-힣\s]+$/.test(formData.username)) {
+            setUserNameMessage("사용자 이름에는 특수문자를 포함할 수 없습니다.");
+            isValid = false;
+        } else {
+            setUserNameMessage("");
+        }
+
+        // 이메일 유효성 검사
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            setUserEmailMessage("올바른 이메일 형식을 입력해주세요.");
+            isValid = false;
+        } else {
+            setUserEmailMessage("");
+        }
+
+        return isValid;
+    };
+
     const validatePasswordInput = () => {
         if (!passwordData.currentPassword) {
-            setMessage("현재 비밀번호를 입력해주세요.");
+            setPasswordMessage("현재 비밀번호를 입력해주세요.");
             return false;
+        } else {
+            setPasswordMessage('');
         }
-        if (passwordData.newPassword.length < 8) {
-            setMessage("새 비밀번호는 최소 8자 이상이어야 합니다.");
-            return false;
-        }
+
         if (!/[A-Za-z]/.test(passwordData.newPassword) || !/[0-9]/.test(passwordData.newPassword) || !/[!@#$%^&*]/.test(passwordData.newPassword)) {
-            setMessage("새 비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다.");
+            setNewPasswordMessage("새 비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다.");
             return false;
+        } else if (passwordData.newPassword.length < 8) {
+            setNewPasswordMessage("새 비밀번호는 최소 8자 이상이어야 합니다.");
+            return false;
+        } else {
+            setNewPasswordMessage('');
         }
         return true;
     };
@@ -208,10 +245,9 @@ export default function UserComponent({handleLogout}) {
                     headers: {Authorization: `Bearer ${accessToken}`},
                 }
             );
-            setMessage("비밀번호가 성공적으로 변경되었습니다.");
             setIsPasswordModalOpen(false);
 
-            // 비밀번호 변경 후 확인 팝업 띄움
+            // 비밀번호 변경 후 확인 팝업
             alert("비밀번호가 성공적으로 변경되었습니다.");
 
             // 유저 데이터 새로 불러오기
@@ -262,6 +298,8 @@ export default function UserComponent({handleLogout}) {
 
 
     const handleDeleteBook = async (bookId) => {
+        const confirmation = window.confirm("해당 대출 내역을 삭제하시겠습니까?");
+        if (!confirmation) return; // 사용자가 취소를 누르면 종료
         try {
             await deleteBook(bookId);
             const data = await fetchBooks();
@@ -274,22 +312,46 @@ export default function UserComponent({handleLogout}) {
 
     // 날짜 검증 추가
     const validateDates = () => {
-        const {loanDate, returnDate} = bookInfo;
+        const {title, library, loanDate, returnDate} = bookInfo;
         const today = new Date().toISOString().split('T')[0]; // 현재 날짜 (YYYY-MM-DD 형식)
 
-        if (!loanDate || !returnDate) {
-            alert('대출 날짜와 반납 날짜를 입력하세요.');
+        // 도서명 검사
+        if (!title.trim()) {
+            setBorrowMessage1("도서명을 입력해주세요.");
             return false;
+        } else {
+            setBorrowMessage1('');
+        }
+
+        // 대출 도서관 검사
+        if (!library.trim()) {
+            setBorrowMessage2("대출 도서관을 입력해주세요.");
+            return false;
+        } else {
+            setBorrowMessage2('');
+        }
+
+        if (!loanDate || !returnDate) {
+            setBorrowMessage3('대출 날짜와 반납 날짜를 입력하세요.');
+            setBorrowMessage4('대출 날짜와 반납 날짜를 입력하세요.');
+            return false;
+        } else {
+            setBorrowMessage3('');
+            setBorrowMessage4('');
         }
 
         if (returnDate < today) {
-            alert('반납 날짜는 오늘 이후여야 합니다.');
+            setBorrowMessage4('반납 날짜는 오늘 이후여야 합니다.');
             return false;
+        } else {
+            setBorrowMessage4('');
         }
 
         if (loanDate >= returnDate) {
-            alert('반납 날짜는 대출 날짜 이후여야 합니다.');
+            setBorrowMessage4('반납 날짜는 대출 날짜 이후여야 합니다.');
             return false;
+        } else {
+            setBorrowMessage4('');
         }
 
         return true;
@@ -301,7 +363,7 @@ export default function UserComponent({handleLogout}) {
                 const data = await fetchBooks();
                 setBooks(data);
             } catch (error) {
-                setMessage('Failed to fetch books.');
+                console.error('Failed to fetch books.', error);
             }
         };
 
@@ -314,7 +376,6 @@ export default function UserComponent({handleLogout}) {
     const fetchFavorites = async () => {
         const accessToken = localStorage.getItem('accessToken');
         if (!accessToken) {
-            setMessage('No access token found.');
             setFavorites([]); // 상태 초기화
             return;
         }
@@ -340,21 +401,24 @@ export default function UserComponent({handleLogout}) {
             setFavorites(renamedFavorites);
         } catch (error) {
             console.error('Error fetching favorites:', error);
-            setMessage('Failed to fetch favorites.');
             setFavorites([]); // 에러 시 상태 초기화
         }
     };
 
     // 즐겨찾기 제거
     const handleRemoveFavorite = async (isbn13) => {
+        const confirmation = window.confirm("정말로 이 즐겨찾기를 삭제하시겠습니까?");
+        if (!confirmation) return; // 사용자가 취소를 누르면 종료
+
         try {
             await removeFavorite(isbn13);
             setFavorites(favorites.filter((fav) => fav.isbn13 !== isbn13));
-            setMessage('Favorite removed successfully.');
+            await fetchRecommendations();
         } catch (error) {
-            setMessage('Failed to remove favorite.');
+            console.error("Failed to remove favorite.", error);
         }
     };
+
     useEffect(() => {
         const fetchUserAndBooks = async () => {
             setIsLoading(true);
@@ -375,35 +439,31 @@ export default function UserComponent({handleLogout}) {
         return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
     };
 
-    useEffect(() => {
-        const fetchRecommendations = async () => {
-            const accessToken = localStorage.getItem("accessToken");
-            if (!accessToken) {
-                console.error("No access token found");
-                setMessage("No access token found.");
-                return;
+    //추천도서 갱신
+    const fetchRecommendations = async () => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+            console.error("No access token found");
+            setMessage("No access token found.");
+            return;
+        }
+        try {
+            const recommendations = await getRecommendedBooks();
+            if (recommendations.length === 0) {
+                //setMessage('즐겨찾기 도서를 추가해 주십시오.');
+            } else {
+                // 중복 제거 로직
+                const uniqueRecommendations = recommendations.filter((book, index, self) =>
+                    index === self.findIndex(b => b.bookname === book.bookname)
+                );
+
+                setRecommendedBooks(uniqueRecommendations);
             }
-            try {
-                const recommendations = await getRecommendedBooks();
-                if (recommendations.length === 0) {
-                    setMessage('즐겨찾기 도서를 추가해 주십시오.');
-                } else {
-                    // 중복 제거 로직
-                    const uniqueRecommendations = recommendations.filter((book, index, self) =>
-                        index === self.findIndex(b => b.bookname === book.bookname)
-                    );
-
-                    setRecommendedBooks(uniqueRecommendations);
-                }
-            } catch (error) {
-                console.error("Failed to fetch recommendations:", error);
-                setMessage("Failed to fetch recommended books.");
-            }
-        };
-
-        fetchRecommendations();
-    }, []);
-
+        } catch (error) {
+            console.error("Failed to fetch recommendations:", error);
+            setMessage("Failed to fetch recommended books.");
+        }
+    };
 
     const handleTitleClick = (bookDetails) => {
         if (!bookDetails) {
@@ -416,54 +476,15 @@ export default function UserComponent({handleLogout}) {
         navigate(`/book/details`, {state: {bookDetails}});
     };
 
-
-
-    ///네비 바/////////////////
-    const sectionsRef = useRef([]);
-
-    const handleScroll = (e, targetId) => {
-        e.preventDefault();
-        const targetElement = document.getElementById(targetId);
-        if (targetElement) {
-            targetElement.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-            });
+    const handleDeleteAccount = (e) => {
+        e.preventDefault(); // 기본 링크 동작 방지
+        const confirmation = window.confirm("정말로 회원탈퇴 하시겠습니까?");
+        if (confirmation) {
+            handleDeleteUser();
+        } else {
+            alert("회원탈퇴가 취소되었습니다.");
         }
     };
-
-    const handleActiveLink = (id) => {
-        const links = document.querySelectorAll(".my-navbar-item");
-        links.forEach((link) => link.classList.remove("active"));
-        const activeLink = Array.from(links).find((link) =>
-            link.querySelector(`a[href="#${id}"]`)
-        );
-        if (activeLink) {
-            activeLink.classList.add("active");
-        }
-    };
-
-    useEffect(() => {
-        const handleScrollObserver = () => {
-            const middleOfViewport = window.innerHeight / 2;
-
-            sectionsRef.current.forEach((section) => {
-                const rect = section.getBoundingClientRect();
-                if (rect.top <= middleOfViewport && rect.bottom >= middleOfViewport) {
-                    handleActiveLink(section.id);
-                }
-            });
-        };
-
-        // 섹션의 레퍼런스를 저장
-        sectionsRef.current = Array.from(document.querySelectorAll(".my-section"));
-
-        window.addEventListener("scroll", handleScrollObserver);
-
-        return () => {
-            window.removeEventListener("scroll", handleScrollObserver);
-        };
-    }, []);
 
     return (
         <div className="main-container">
@@ -537,6 +558,7 @@ export default function UserComponent({handleLogout}) {
                                         className="form-input"
                                     />
                                 </div>
+                                {userNameMessage && <p className="myerror-message">{userNameMessage}</p>}
                                 <div className="form-row">
                                     <label className="form-label">
                                         <strong>이메일</strong>
@@ -549,6 +571,7 @@ export default function UserComponent({handleLogout}) {
                                         className="form-input"
                                     />
                                 </div>
+                                {userEmailMessage && <p className="myerror-message">{userEmailMessage}</p>}
                                 <div className="modal-buttons">
                                     <button onClick={handleUpdateUser}>확인</button>
                                     <button onClick={handleCloseModal}>취소</button>
@@ -586,6 +609,9 @@ export default function UserComponent({handleLogout}) {
                                         </button>
                                     </div>
                                 </div>
+
+                                {passwordMessage && <p className="myerror-message">{passwordMessage}</p>}
+
                                 <div className="form-row">
                                     <label className="form-label">
                                         <strong>새 비밀번호</strong>
@@ -610,6 +636,7 @@ export default function UserComponent({handleLogout}) {
                                         </button>
                                     </div>
                                 </div>
+                                {newPasswordMessage && <p className="myerror-message">{newPasswordMessage}</p>}
                                 <div className="modal-buttons">
                                     <button onClick={handleUpdatePassword}>확인</button>
                                     <button onClick={handleClosePasswordModal}>취소</button>
@@ -640,6 +667,7 @@ export default function UserComponent({handleLogout}) {
                                         className="form-input"
                                     />
                                 </div>
+                                {borrowMessage1 && <p className="myerror-message">{borrowMessage1}</p>}
                                 <div className="form-row">
                                     <label className="form-label">
                                         <strong>대출 도서관</strong>
@@ -653,6 +681,7 @@ export default function UserComponent({handleLogout}) {
                                         className="form-input"
                                     />
                                 </div>
+                                {borrowMessage2 && <p className="myerror-message">{borrowMessage2}</p>}
                                 <div className="form-row">
                                     <label className="form-label">
                                         <strong>대출 날짜</strong>
@@ -666,6 +695,7 @@ export default function UserComponent({handleLogout}) {
                                         className="form-input"
                                     />
                                 </div>
+                                {borrowMessage3 && <p className="myerror-message">{borrowMessage3}</p>}
                                 <div className="form-row">
                                     <label className="form-label">
                                         <strong>반납 날짜</strong>
@@ -679,6 +709,7 @@ export default function UserComponent({handleLogout}) {
                                         className="form-input"
                                     />
                                 </div>
+                                {borrowMessage4 && <p className="myerror-message">{borrowMessage4}</p>}
                                 <div className="modal-buttons">
                                     <button onClick={handleAddBook}>추가</button>
                                 </div>
@@ -712,19 +743,40 @@ export default function UserComponent({handleLogout}) {
                     )}
 
                     <ul className="books-list">
-                        {books.map((book) => (
-                            <li key={book.id} className="book-card">
-                                <span><strong>도서명:</strong> {book.title}</span>
-                                <span><strong>도서관:</strong> {book.library}</span>
-                                <span><strong>대출 날짜:</strong> {book.loanDate}</span>
-                                <span><strong>반납 날짜:</strong> {book.returnDate}</span>
-                                <button
-                                    className="mydelete-button"
-                                    onClick={() => handleDeleteBook(book.id)}>
-                                    <i className="fas fa-times"></i>
-                                </button>
-                            </li>
-                        ))}
+                        {books.map((book) => {
+                            const today = new Date();
+                            const returnDate = new Date(book.returnDate);
+                            const timeDiff = returnDate - today;
+                            const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)); // 남은 날짜 계산
+                            const isOverdue = daysLeft < 0; // 연체 여부 확인
+
+                            return (
+                                <li key={book.id} className="book-card">
+                                    <span><strong>도서명:</strong> {book.title}</span>
+                                    <span><strong>도서관:</strong> {book.library}</span>
+                                    <span><strong>대출 날짜:</strong> {book.loanDate}</span>
+                                    <span>
+                                        <strong>반납 날짜:</strong>{" "}
+                                        <span
+                                            className={isOverdue ? "red-bold" : daysLeft <= 3 ? "red-bold" : ""}
+                                        >
+                                            {book.returnDate}{" "}
+                                            {isOverdue
+                                                ? "(연체)"
+                                                : daysLeft <= 3
+                                                    ? `(${daysLeft}일)`
+                                                    : ""}
+                                      </span>
+                                    </span>
+                                    <button
+                                        className="mydelete-button"
+                                        onClick={() => handleDeleteBook(book.id)}
+                                    >
+                                        <i className="fas fa-times"></i>
+                                    </button>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </section>
 
@@ -862,23 +914,14 @@ export default function UserComponent({handleLogout}) {
                     )}
                 </section>
 
-
-                <a
-                    href="#"
-                    onClick={removeAllFavorites}
-                    className="detail-back-button"
-                >모든 즐겨찾기 삭제
-                </a>
-
-                <a
-                    href="#"
-                    onClick={handleDeleteUser}
-                    className="detail-back-button"
-                >회원탈퇴
-                </a>
-
-                {/*경고문구, 나중에 수정*/}
-                {message && <p>{message}</p>}
+                <section className="draw-section">
+                    <a
+                        href="#"
+                        onClick={handleDeleteAccount}
+                        className="withdraw-button"
+                    >회원탈퇴
+                    </a>
+                </section>
             </div>
         </div>
     );

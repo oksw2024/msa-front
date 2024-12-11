@@ -23,6 +23,16 @@ body {
     background-color: #f9f9f9;
 }
 
+@media screen and (max-width: 700px) {
+    .content-container {
+        margin-top: 0px;
+        flex: 1; /* 남은 공간을 차지 */
+        padding: 20px 70px;
+        overflow-y: auto; /* 세로 스크롤 허용 */
+        background-color: #f9f9f9;
+    }
+}
+
 
 /* 상단 배너 스타일 */
 .my-banner {
@@ -396,7 +406,6 @@ body {
 
 .book-card span {
     font-size: 16px;
-    color: #555;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; /* 텍스트 넘칠 경우 생략 */
@@ -501,3 +510,43 @@ body {
 
 
 
+.draw-section{
+    margin: auto;
+    min-width: 652px;
+    padding: 0px;
+    background: #f9f9f9;
+}
+/*회원탈퇴 css*/
+.withdraw-button{
+    display: block; /* 오른쪽 정렬을 위해 블록 요소로 설정 */
+    text-align: right; /* 오른쪽 정렬 */
+    color: #808080; /* 회색 글씨 */
+    text-decoration: none; /* 밑줄 제거 */
+    font-size: 14px; /* 글씨 크기 */
+    margin-top: 20px; /* 위쪽 간격 */
+    margin-right: auto;
+    transition: color 0.3s; /* 색상 변경 시 부드러운 효과 */
+
+
+
+}
+
+.withdraw-button:hover {
+    color: #234662;
+    text-decoration: underline; /* 호버 시 밑줄 추가 */
+}
+
+
+/*에러메시지 css*/
+.myerror-message {
+    color: #ff4d4f; /* 빨간색 */
+    text-align: right; /* 우측 정렬 */
+    font-size: 14px; /* 글씨 크기 */
+    margin-top: -15px; /* 위쪽 간격 */
+}
+
+/* 남은 날짜 강조 스타일 */
+.red-bold {
+    color: #ff4d4f; /* 빨간색 */
+    font-weight: bold; /* 굵은 글씨 */
+}
