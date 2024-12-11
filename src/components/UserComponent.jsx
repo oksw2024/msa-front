@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {deleteUser, findUser, updateUser} from '../services/UserService';
+import {deleteUser, findUser, updateUser, changePassword} from '../services/UserService';
 import {getFavorites, removeFavorite, getRecommendedBooks, removeAllFavorites} from '../services/FavoriteService';
 import {useNavigate} from 'react-router-dom';
-import axios from 'axios';
 import '../css/UserComponent.css'
 import {addBook, fetchBooks, deleteBook} from "../services/BooknoteService.js";
 
