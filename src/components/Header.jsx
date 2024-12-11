@@ -9,6 +9,7 @@ function Header({isLoggedIn, handleLogout}) {
     const location = useLocation();
     const navigate = useNavigate();
 
+
     // 로그인/회원가입 버튼을 숨길 경로 목록
     const hideAuthButtonsPaths = ['/login', '/signup'];
 
@@ -51,38 +52,44 @@ function Header({isLoggedIn, handleLogout}) {
 
     ///////////////////my-navbar
     useEffect(() => {
-        const sections = document.querySelectorAll("[data-section]");
+        // '/user' 경로에 접속할 때마다 실행
+        if (location.pathname === "/user") {
+            const sections = document.querySelectorAll("[data-section]");
 
-        // Intersection Observer Callback
-        const observerCallback = (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    setActiveSection(entry.target.getAttribute("data-section"));
-                }
-            });
-        };
+            // Intersection Observer Callback
+            const observerCallback = (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setActiveSection(entry.target.getAttribute("data-section"));
+                    }
+                });
+            };
 
-        // Intersection Observer Options
-        const observerOptions = {
-            root: null, // 뷰포트를 기준으로
-            threshold: 0.5, // 50% 이상 보일 때 감지
-        };
+            // Intersection Observer Options
+            const observerOptions = {
+                root: null, // 뷰포트를 기준으로
+                threshold: 0.5, // 50% 이상 보일 때 감지
+            };
 
-        // Initialize Intersection Observer
-        const observer = new IntersectionObserver(observerCallback, observerOptions);
-        sections.forEach((section) => observer.observe(section));
+            // Initialize Intersection Observer
+            const observer = new IntersectionObserver(observerCallback, observerOptions);
+            sections.forEach((section) => observer.observe(section));
 
-        return () => observer.disconnect();
-    }, []);
+            return () => observer.disconnect();
+        }
+    }, [location]);
 
     useEffect(() => {
-        const rootElement = document.documentElement;
-        rootElement.style.scrollBehavior = 'smooth';
+        if (location.pathname === "/user") {
+            const rootElement = document.documentElement;
+            rootElement.style.scrollBehavior = "smooth";
 
-        return () => {
-            rootElement.style.scrollBehavior = 'auto';
-        };
-    }, []);
+            return () => {
+                rootElement.style.scrollBehavior = "auto";
+            };
+        }
+    }, [location]);
+
 
     const scrollToSection = (sectionId) => {
         const targetSection = document.getElementById(sectionId);
