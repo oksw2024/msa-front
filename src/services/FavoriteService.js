@@ -1,4 +1,3 @@
-// 미래의 나에게 : 건들지마 제발
 import apiClient from './AxiosInstance';
 
 // 즐겨찾기 호출
