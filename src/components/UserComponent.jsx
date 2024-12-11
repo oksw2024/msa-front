@@ -805,7 +805,7 @@ export default function UserComponent({handleLogout}) {
                     <h2>추천 도서</h2>
 
                     {favorites.length <= 0 ? (
-                        <p>추천 도서가 없습니다.</p>
+                        <p className='fav-list>추천 도서가 없습니다.</p>
                     ) : recommendedBooks.length > 0 ? (
                             <div className="my-carousel-container">
                                 {/* 왼쪽 화살표 */}
@@ -878,7 +878,7 @@ export default function UserComponent({handleLogout}) {
                                 </button>
                             </div>
                         ) : (
-                            <p>추천 도서가 없습니다.</p>
+                            <p className='fav-list'>추천 도서가 없습니다.</p>
                     )}
                 </section>
 
