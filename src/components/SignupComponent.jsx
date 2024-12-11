@@ -89,7 +89,7 @@ export default function SignupComponent() {
         }
 
         try {
-            const result = await signup({username, loginId, password, email});
+            await signup({username, loginId, password, email});
             alert(username + '님, 가입을 환영합니다.');
             navigate('/'); // 회원가입 성공 후 메인 페이지로 이동
         } catch (error) {

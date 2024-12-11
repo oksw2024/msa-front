@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { login } from '../services/AuthService';
-import {useLocation, useNavigate} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import "../css/LoginComponent.css";
 
 function LoginComponent({ onLogin }) {

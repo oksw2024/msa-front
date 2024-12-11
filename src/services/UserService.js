@@ -1,8 +1,6 @@
 
 import apiClient from './AxiosInstance';
 
-
-
 const USER_API = '/v1/user';
 
 export const findUser = async () => {
@@ -15,7 +13,6 @@ export const findUser = async () => {
     throw error;
   }
 };
-
 
 export const updateUser = async (userDetails) => {
   const response = await apiClient.put(USER_API, userDetails);
@@ -37,5 +34,3 @@ export const changePassword = async (currentPassword, newPassword) => {
     throw error;
   }
 };
-
-

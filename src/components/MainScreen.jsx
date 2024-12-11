@@ -3,7 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import "../css/MainScreen.css";
 
-export default function MainScreen({isLoggedIn, handleLogout}) {
+export default function MainScreen() {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [searchType, setSearchType] = useState('');
@@ -13,7 +13,6 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
     const [currentPage2, setCurrentPage2] = useState(0);
     const itemsPerPage = 3;
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
     // 중복 호출 방지 플래그
     const hasFetched = useRef(false);
@@ -53,7 +52,7 @@ export default function MainScreen({isLoggedIn, handleLogout}) {
                 setRecommendedBooks(recommended);
                 setNewBooks(newBooksData);
             } catch (err) {
-                setError(err.message);
+                console.error("error : ", err);
             } finally {
                 setLoading(false);
                 hasFetched.current = true; // 데이터를 가져온 후 플래그 설정

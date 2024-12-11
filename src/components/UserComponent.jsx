@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {deleteUser, findUser, updateUser, changePassword} from '../services/UserService';
+import {deleteUser, findUser, updateUser} from '../services/UserService';
 import {getFavorites, removeFavorite, getRecommendedBooks, removeAllFavorites} from '../services/FavoriteService';
 import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
@@ -34,9 +34,6 @@ export default function UserComponent({handleLogout}) {
     const itemsPerPage = 3;
     const navigate = useNavigate();
 
-    const [message, setMessage] = useState('');
-    const [userMessage, setUserMessage] = useState('');
-
     const [passwordMessage, setPasswordMessage] = useState('');
     const [newPasswordMessage, setNewPasswordMessage] = useState('');
     const [userNameMessage, setUserNameMessage] = useState('');
@@ -50,10 +47,6 @@ export default function UserComponent({handleLogout}) {
         handleFindUser();
         fetchRecommendations();
     }, []);
-
-    const handleBack = () => {
-        navigate('/');
-    };
 
     const handleDeleteUser = async () => {
         try {
@@ -100,8 +93,6 @@ export default function UserComponent({handleLogout}) {
                     retryCount++;
                     console.log(`Retrying fetch user data... Attempt ${retryCount}`);
                     setTimeout(fetchUserWithRetry, 1000);
-                } else {
-                    setUserMessage("사용자 데이터를 불러오지 못했습니다.");
                 }
             } finally {
                 setIsLoading(false);
@@ -154,12 +145,10 @@ export default function UserComponent({handleLogout}) {
     };
 
     const handleCloseModal = () => {
-        setIsLoading(false);
         setIsModalOpen(false);
     };
 
     const handleClosePasswordModal = () => {
-        setIsLoading(false);
         setIsPasswordModalOpen(false);
     };
 
@@ -268,16 +257,8 @@ export default function UserComponent({handleLogout}) {
             setBooks([...books, newBook]);
             setBookInfo({title: '', library: '', loanDate: '', returnDate: ''});
             setIsBookPopupOpen(false);
-
-            setMessage('Book added successfully.');
         } catch (error) {
-            if (error.response?.status === 401) {
-                setMessage('Unauthorized. Please login again.');
-            } else if (error.response?.status === 500) {
-                setMessage('모든 값을 입력해주세요');
-            } else {
-                setMessage('Failed to add book.');
-            }
+            console.error("error : ", error);
         }
     };
 
@@ -294,7 +275,7 @@ export default function UserComponent({handleLogout}) {
             const data = await fetchBooks();
             setBooks(data);
         } catch (error) {
-            setMessage('Failed to delete book.');
+            console.error("error : ", error);
         }
     };
 
@@ -373,7 +354,6 @@ export default function UserComponent({handleLogout}) {
             console.log("Fetched favorites:", favoriteList); // 데이터 확인
 
             if (!favoriteList || favoriteList.length === 0) {
-                setMessage('즐겨찾기 목록이 비어 있습니다.');
                 setFavorites([]);
                 return;
             }
@@ -433,13 +413,12 @@ export default function UserComponent({handleLogout}) {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
             console.error("No access token found");
-            setMessage("No access token found.");
             return;
         }
         try {
             const recommendations = await getRecommendedBooks();
             if (recommendations.length === 0) {
-                //setMessage('즐겨찾기 도서를 추가해 주십시오.');
+                console.log("즐겨찾기 목록을 추가해주세요.");
             } else {
                 // 중복 제거 로직
                 const uniqueRecommendations = recommendations.filter((book, index, self) =>
@@ -450,7 +429,6 @@ export default function UserComponent({handleLogout}) {
             }
         } catch (error) {
             console.error("Failed to fetch recommendations:", error);
-            setMessage("Failed to fetch recommended books.");
         }
     };
 
