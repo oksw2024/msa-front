@@ -403,7 +403,7 @@ export default function UserComponent({handleLogout}) {
 
     ////////////////////////////////추천도서
     // 제목 글자 수 제한
-    const truncateText = (text, maxLength) => {
+    function truncateText(text, maxLength) {
         return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
     };
 
@@ -420,11 +420,11 @@ export default function UserComponent({handleLogout}) {
                 console.log("즐겨찾기 목록을 추가해주세요.");
             } else {
                 // 중복 제거 로직
-                const uniqueRecommendations = recommendations.filter((book, index, self) =>
-                    index === self.findIndex(b => b.bookname === book.bookname)
-                );
+                // const uniqueRecommendations = recommendations.filter((book, index, self) =>
+                //     index === self.findIndex(b => b.bookname === book.bookname)
+                // );
 
-                setRecommendedBooks(uniqueRecommendations);
+                setRecommendedBooks(recommendations);
             }
         } catch (error) {
             console.error("Failed to fetch recommendations:", error);
@@ -805,7 +805,7 @@ export default function UserComponent({handleLogout}) {
                     <h2>추천 도서</h2>
 
                     {favorites.length <= 0 ? (
-                        <p className='fav-list>추천 도서가 없습니다.</p>
+                        <p className='fav-list'>추천 도서가 없습니다.</p>   
                     ) : recommendedBooks.length > 0 ? (
                             <div className="my-carousel-container">
                                 {/* 왼쪽 화살표 */}
@@ -840,7 +840,7 @@ export default function UserComponent({handleLogout}) {
                                                             onClick={() => handleTitleClick(book)}
                                                             style={{cursor: "pointer"}}
                                                         >
-                                                            {truncateText(book.bookname, 18)}
+                                                            {truncateText(book.bookname, 15)}
                                                         </h4>
                                                     </div>
                                                 </li>
